@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,400&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-serif: "Fraunces", Georgia, serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --color-brand-navy: #080c14;
+  --color-brand-navy-light: #121826;
+  --color-brand-navy-dark: #03050a;
+  --color-brand-teal: #20b8a6;
+  --color-brand-coral: #ef4444;
+  --color-brand-gold: #f59e0b;
+}
+
+@layer base {
+  body {
+    background-color: #03050a;
+    color: #e2e8f0;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #050505;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1a1a1a;
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2a2a2a;
+  }
+}
+
+/* Animations for timeline */
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s infinite;
+}
+
+/* Elegant Bento card patterns */
+.bento-card {
+  background-color: #0c0c0c;
+  border: 1px solid #1a1a1a;
+  border-radius: 2rem;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bento-card-dark {
+  background-color: #050505;
+  border: 1px solid #141414;
+  border-radius: 2rem;
+}
+
+.bento-card-light {
+  background-color: #111111;
+  border: 1px solid #222222;
+  border-radius: 2rem;
+}
+
+.bento-border {
+  border-color: #1a1a1a;
+}
+
