@@ -88,26 +88,16 @@ export default function App() {
             </button>
           </div>
 
-          {/* Quick Support / Contact Badge + Intelligence applied by */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-500 tracking-tight select-none">
-              <span>Intelligence applied by</span>
-              <img 
-                src="/logo_allla.jpeg" 
-                alt="allla logo" 
-                className="h-3.5 w-auto rounded opacity-80"
-              />
-            </div>
-            <div>
-              <a
-                href="mailto:igor.rego.IR@gmail.com?subject=allla%20Consultoria%20Varejao"
-                className="py-1.5 px-3 rounded-lg bg-brand-navy/90 hover:bg-brand-navy-light/40 border border-slate-800 text-xs font-mono text-slate-300 flex items-center gap-1.5 transition-colors"
-              >
-                <Mail className="w-3.5 h-3.5 text-brand-teal" />
-                <span className="hidden sm:inline">igor.rego.IR@gmail.com</span>
-                <span className="inline sm:hidden">Contato</span>
-              </a>
-            </div>
+          {/* Intelligence applied by allla - enlarged and clean */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-950/40 border border-slate-800/40 select-none">
+            <span className="text-[11px] font-mono text-slate-400 tracking-tight">
+              Intelligence applied by
+            </span>
+            <img 
+              src="/logo_allla.jpeg" 
+              alt="allla logo" 
+              className="h-6 w-auto rounded opacity-90 object-contain border border-slate-700/20"
+            />
           </div>
         </div>
       </header>

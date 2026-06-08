@@ -163,19 +163,39 @@
 }
 
 /* Special treatments for UI elements to preserve contrast */
-header, header * {
-  /* Keep header dark navy for structural brand framing (Manifesto surface style) */
-  background-color: transparent !important;
-  color: #ffffff !important;
-}
 header {
   background-color: var(--color-primary-deep) !important;
   border-bottom: 1px solid var(--color-primary) !important;
 }
-header .text-slate-500, header .text-slate-450 {
+header, header * {
+  background-color: transparent;
+}
+/* Enforce high contrast text inside header, overriding global utility selectors */
+header .text-white, 
+header span.text-white, 
+header span.font-display.text-white {
+  color: #ffffff !important;
+}
+header .text-brand-teal, 
+header span.text-brand-teal, 
+header .text-brand-teal * {
+  color: var(--color-accent) !important;
+}
+header .text-slate-400, 
+header .text-slate-500, 
+header .text-slate-600 {
   color: var(--color-steel-soft) !important;
 }
-header span.text-brand-teal {
+header .text-slate-400:hover, 
+header .text-slate-500:hover, 
+header button:hover {
+  color: #ffffff !important;
+}
+header button {
+  color: var(--color-steel-soft) !important;
+  transition: color 0.15s ease !important;
+}
+header button.text-brand-teal {
   color: var(--color-accent) !important;
 }
 
