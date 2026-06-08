@@ -1,4 +1,4 @@
--- Varejão Era 1 — Supabase Database Schema
+-- Varejão Fase 1 — Supabase Database Schema
 -- Paste this into your Supabase SQL Editor to set up the tables.
 
 -- Table for contact leads

@@ -99,7 +99,7 @@ export default function PlaybackDashboard({ onComplete, liveData }: PlaybackDash
   };
 
   // Step duration in ms
-  const baseDuration = 8000; // 8 seconds per step on 1x speed
+  const baseDuration = 16000; // 16 seconds per step on 1x speed
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -350,12 +350,12 @@ export default function PlaybackDashboard({ onComplete, liveData }: PlaybackDash
                   className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-950 font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 cursor-pointer transition-opacity"
                 >
                   <Sparkles className="w-4 h-4 fill-slate-950" />
-                  <span>Ver Tese da Era 1</span>
+                  <span>Ver Tese da Fase 1</span>
                 </button>
               )}
             </div>
           </div>
-
+ 
           {/* Informational Widget */}
           <div className="p-5 rounded-2xl bg-indigo-950/10 border border-indigo-900/40 relative overflow-hidden">
             <div className="absolute right-0 bottom-0 opacity-10">
@@ -363,10 +363,10 @@ export default function PlaybackDashboard({ onComplete, liveData }: PlaybackDash
             </div>
             <h4 className="font-display font-semibold text-teal-400 text-sm flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5" />
-              O Olhar da Era 1
+              O Olhar da Fase 1
             </h4>
             <p className="text-xs text-slate-300 mt-2 leading-relaxed">
-              Diferente de sistemas legados de autopeças que enviam alertas ruidosos para as 3.000 peças simultaneamente, o Agente calcula o <strong>Custo de Oportunidade</strong> e foca 100% da atenção nas peças de maior fluxo sob risco real.
+              Diferente das abordagens tradicionais de mercado que costumam gerar relatórios de faltas excessivos e de difícil análise, a nossa inteligência apoia a equipe ao priorizar a atenção nos itens de alta relevância com risco real de desabastecimento.
             </p>
           </div>
         </div>

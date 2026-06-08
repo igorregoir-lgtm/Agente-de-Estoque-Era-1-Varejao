@@ -564,7 +564,7 @@ export const RELATORIO_PRECOMPUTED: RelatorioExecutivo = {
       justificativa: "A amostra aponta 35 unidades com tempo de cobertura irreal de 94 dias úteis no armazém."
     }
   ],
-  notaAoComprador: "A Era 1 aplica o regulamento matemático-estratégico de forma cirúrgica. Em vez de comprar conjuntos em pacotes genéricos de fornecedores para rechear metas de bônus comerciais, o Agente canaliza o capital para os exatos SKUs de alta recorrência sob risco de perda iminente. O comprador avalia e chancela o pedido economizando horas de análise manual rasa."
+  notaAoComprador: "A Fase 1 aplica o método estratégico de forma cirúrgica. Em vez de comprar lotes genéricos de fornecedores para atingir metas de volume, o Agente direciona o capital para os exatos SKUs de alta recorrência sob risco de falta iminente. O comprador avalia e chancela o pedido com facilidade, otimizando seu tempo de trabalho."
 };
 
 export const FASES_TESE: FaseTese[] = [

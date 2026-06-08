@@ -49,7 +49,7 @@ export default function App() {
             onClick={() => setStage("welcome")} 
             className="flex items-center gap-2.5 cursor-pointer group select-none"
           >
-            {/* Elegant SVG visual representing allla + Era 1 logo */}
+            {/* Elegant SVG visual representing allla + Fase 1 logo */}
             <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-teal to-emerald-400 flex items-center justify-center shadow-lg shadow-brand-teal/20 group-hover:scale-105 transition-transform">
               <span className="font-serif italic font-bold text-slate-950 text-lg">a</span>
             </div>
@@ -58,7 +58,7 @@ export default function App() {
                 allla<span className="text-brand-teal">.ai</span>
               </span>
               <span className="text-[10px] font-mono text-slate-500 tracking-wider uppercase block -mt-1 font-semibold">
-                Era 1 · Suprimentos
+                Fase 1 · Suprimentos
               </span>
             </div>
           </div>
@@ -72,7 +72,7 @@ export default function App() {
               }}
               className={`transition-colors cursor-pointer ${stage === "playback" && !customResult ? "text-brand-teal font-bold" : "text-slate-400 hover:text-slate-200"}`}
             >
-              Playback Demo
+              Demonstração
             </button>
             <button
               onClick={() => setStage("tese")}
@@ -90,13 +90,13 @@ export default function App() {
 
           {/* Intelligence applied by allla - enlarged and clean */}
           <div className="flex items-center gap-3.5 px-4 py-2.5 rounded-2xl bg-slate-950/40 border border-slate-800/40 select-none">
-            <span className="text-sm font-semibold text-slate-350 tracking-tight font-mono">
+            <span className="text-sm font-semibold text-slate-355 tracking-tight font-mono">
               Intelligence applied by
             </span>
             <img 
               src="/logo_allla.jpeg" 
               alt="allla logo" 
-              className="h-10 w-auto rounded opacity-90 object-contain border border-slate-700/20"
+              className="h-18 w-auto rounded opacity-95 object-contain border border-slate-700/20"
             />
           </div>
         </div>

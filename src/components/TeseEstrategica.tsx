@@ -21,10 +21,10 @@ export default function TeseEstrategica({ onBackToDemo, onOpenLivePlayground }: 
           <span>TESE ESTRATÉGICA · VAREJÃO AUTOPEÇAS</span>
         </div>
         <h2 className="text-3xl md:text-5xl font-serif font-semibold text-white tracking-tight">
-          A Jornada das <span className="text-brand-teal italic">Três Eras</span> de Suprimentos
+          A Jornada das <span className="text-brand-teal italic">Três Fases</span> de Suprimentos
         </h2>
         <p className="text-slate-400 text-sm md:text-base leading-relaxed">
-          Como transformamos o departamento de compras de uma distribuidora de autopeças reativa, baseada em bônus comerciais artificiais, em uma máquina logística focada no giro cirúrgico de capital.
+          Como apoiamos o departamento de compras do Varejão a evoluir de uma postura tradicional e reativa para uma gestão estratégica e inteligente, focada na saúde financeira do estoque e no atendimento impecável dos clientes.
         </p>
       </div>
 
@@ -32,30 +32,30 @@ export default function TeseEstrategica({ onBackToDemo, onOpenLivePlayground }: 
       <div className="bg-[#0c0c0c] border border-[#1a1a1a] rounded-[2rem] p-6 md:p-8 space-y-6">
         <h3 className="text-xl font-display font-medium text-white flex items-center gap-2">
           <Layers className="w-4 h-4 text-brand-teal" />
-          Curva de Valor: Distribuidora Tradicional vs. Era 1 da allla
+          Curva de Valor: Abordagem de Mercado vs. Fase 1 da allla
         </h3>
         <p className="text-xs text-slate-400 leading-relaxed">
-          Os sistemas convencionais focam em lotes volumosos de fornecedores e metas puramente comerciais. A era inteligente redistribui o capital para blindar a recorrência.
+          Os processos de abastecimento tradicionais costumam focar em compras por volume. A nossa abordagem inteligente prioriza a proteção do caixa e a disponibilidade das peças certas.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
           {/* Traditional System */}
           <div className="p-5 rounded-2xl bg-[#030303] border border-rose-950/50 space-y-4">
             <span className="font-mono text-rose-500 font-bold text-xs uppercase tracking-widest block">
-              COMO É HOJE: Abordagem Tradicional
+              COMO É HOJE: Abordagem Tradicional no Mercado
             </span>
             <ul className="space-y-2 text-xs md:text-sm text-slate-300">
               <li className="flex items-start gap-2 leading-relaxed">
                 <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-                <span><strong>Geração de Excedente:</strong> Compras genéricas infladas para conseguir desconto comercial de fabricante, gerando capital imobilizado.</span>
+                <span><strong>Geração de Excedente:</strong> Compras genéricas baseadas na abordagem tradicional encontrada no mercado para conseguir desconto de volume, mantendo capital parado sem necessidade.</span>
               </li>
               <li className="flex items-start gap-2 leading-relaxed">
                 <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-                <span><strong>Recusa de Faturamento:</strong> Ruptura silenciosa de itens baratos de giro estável (vendas recusadas no balcão de autopeças).</span>
+                <span><strong>Ruptura de Estoque:</strong> Indisponibilidade silenciosa de itens importantes para o dia a dia, gerando perda de vendas e insatisfação no balcão.</span>
               </li>
               <li className="flex items-start gap-2 leading-relaxed">
                 <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-                <span><strong>Decisão Lenta:</strong> Compradores perdem até 3 dias semanais limpando planilhas manuais propensas a erros.</span>
+                <span><strong>Sobrecarga Operacional:</strong> Equipes de compras sobrecarregadas com planilhas manuais complexas, sobrando pouco tempo para análises estratégicas.</span>
               </li>
             </ul>
           </div>
@@ -63,20 +63,20 @@ export default function TeseEstrategica({ onBackToDemo, onOpenLivePlayground }: 
           {/* Era 1 Systems */}
           <div className="p-5 rounded-2xl bg-[#111111] border border-blue-500/20 space-y-4">
             <span className="font-mono text-blue-400 font-bold text-xs uppercase tracking-widest block">
-              COMO PROPOMOS: A Era 1 por allla
+              COMO PROPOMOS: A Fase 1 por allla
             </span>
             <ul className="space-y-2 text-xs md:text-sm text-slate-300">
               <li className="flex items-start gap-2 leading-relaxed">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>Saneamento de Portfólio:</strong> Desmobilização cirúrgica de itens amarrados de giro lento e recolocação em peças críticas.</span>
+                <span><strong>Saneamento de Portfólio:</strong> Realocação consciente do capital, reduzindo o excesso em itens de baixo giro para investir em peças essenciais.</span>
               </li>
               <li className="flex items-start gap-2 leading-relaxed">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>Blindagem de Recorrência:</strong> Estoques de segurança ótimos baseados no lead time exato do CD regional.</span>
+                <span><strong>Blindagem de Recorrência:</strong> Proteção contínua contra falta de estoque, baseada no tempo de entrega real do Centro de Distribuição regional.</span>
               </li>
               <li className="flex items-start gap-2 leading-relaxed">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>Explicabilidade com IA:</strong> Pedidos embasados com diagnósticos claros e concisos escritos em português.</span>
+                <span><strong>Decisões Justificadas:</strong> Pedidos recomendados com diagnósticos estratégicos claros e concisos que facilitam o dia a dia.</span>
               </li>
             </ul>
           </div>
@@ -155,7 +155,7 @@ export default function TeseEstrategica({ onBackToDemo, onOpenLivePlayground }: 
 
             <div className="space-y-3 bg-[#111111] p-4 rounded-xl border border-[#1a1a1a]">
               <span className="text-[10px] font-mono text-slate-500 block uppercase tracking-widest">
-                INICIATIVAS LOGÍSTICAS DA ERA
+                INICIATIVAS LOGÍSTICAS DA FASE
               </span>
               <ul className="space-y-2 text-xs text-slate-300 font-mono">
                 {activePhase.iniciativas.map((initiative, idx) => (

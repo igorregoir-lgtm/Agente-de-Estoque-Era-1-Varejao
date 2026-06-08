@@ -39,7 +39,7 @@ export default function WelcomeScreen({ onStart }: WelcomeScreenProps) {
         {/* allla branding & Badge */}
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/60 border border-slate-800 backdrop-blur-md">
           <Sparkles className="w-3.5 h-3.5 text-brand-teal animate-pulse" />
-          <span className="font-mono text-xs uppercase tracking-widest text-emerald-400">allla.ai · Era 1 · Inteligência</span>
+          <span className="font-mono text-xs uppercase tracking-widest text-emerald-400">allla.ai · Fase 1 · Inteligência</span>
         </div>
 
         {/* Strategic Hook (0.1 Tese) */}
@@ -49,7 +49,7 @@ export default function WelcomeScreen({ onStart }: WelcomeScreenProps) {
         </h1>
 
         <p className="max-w-xl mx-auto text-sm md:text-base text-slate-300 font-sans leading-relaxed">
-          Prove a inteligência de suprimentos da Era 1 para o Varejão Autopeças. Veja como algoritmos e modelos explicativos eliminam a estocagem ociosa de amortecedores e evitam a falta crítica de cabos e velas.
+          Prove a inteligência de suprimentos da Fase 1 para o Varejão Autopeças. Veja como algoritmos e modelos explicativos eliminam a estocagem ociosa de amortecedores e evitam a falta crítica de cabos e velas.
         </p>
 
         {/* Interactive load indicator / countdown box */}
@@ -57,7 +57,7 @@ export default function WelcomeScreen({ onStart }: WelcomeScreenProps) {
           <div className="flex items-center justify-between text-xs font-mono text-slate-400">
             <span className="flex items-center gap-1.5 font-medium">
               <Database className="w-4 h-4 text-brand-teal" />
-              Semente de Playback Determinístico
+              Semente de Simulação Determinística
             </span>
             <span className="text-slate-500">15 SKUs de Autopeças</span>
           </div>
@@ -84,7 +84,7 @@ export default function WelcomeScreen({ onStart }: WelcomeScreenProps) {
             className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-950 font-semibold tracking-wide flex items-center justify-center gap-3 shadow-lg shadow-teal-500/10 hover:shadow-teal-500/25 transition-all hover:scale-[1.02] cursor-pointer group"
           >
             <Play className="w-4 h-4 fill-slate-950 group-hover:scale-110 transition-transform" />
-            <span className="font-display font-bold text-sm">Ver a Era 1 Operando</span>
+            <span className="font-display font-bold text-sm">Ver a Fase 1 em Ação</span>
           </button>
         </div>
 

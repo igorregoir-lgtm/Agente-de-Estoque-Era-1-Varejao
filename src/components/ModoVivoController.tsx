@@ -461,7 +461,7 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
             acao: `Gatilho de Reposição: Pedir ${i.qtdSugerida} un do SKU ${i.sku} (MOQ: ${i.moq}).`,
             justificativa: i.justificativa
           })),
-          notaAoComprador: "Decisão simulada em conformidade com as regras financeiras da Era 1. O saldo é calculado usando o consumo diário derivado da média mensal e desvio padrão para calibrar o estoque de segurança."
+          notaAoComprador: "Decisão simulada em conformidade com as diretrizes da Fase 1. O saldo ideal é projetado usando o ritmo de vendas diário derivado do histórico mensal e o desvio padrão para calibrar a margem de segurança."
         };
 
         setIsLoading(false);
@@ -494,7 +494,7 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
           <span>Lote Customizado Ativo</span>
         </div>
         <h2 className="text-3xl md:text-5xl font-serif font-semibold text-white tracking-tight">
-          Simulador Inteligente <span className="text-brand-teal italic">Era 1</span>
+          Simulador Inteligente <span className="text-brand-teal italic">Fase 1</span>
         </h2>
         <p className="text-slate-405 text-sm max-w-2xl leading-relaxed">
           Altere as quantidades em estoque, custos, preços e histórico de vendas mensais. Suba planilhas ou relatórios em PDF com OCR inteligente. Salve as simulações diretamente na nuvem do Supabase.

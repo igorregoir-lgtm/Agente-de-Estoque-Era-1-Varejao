@@ -47,7 +47,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const ai = getAiClient();
     
     const prompt = `
-      Você é o Agente de Estoque Era 1 do Varejão Autopeças. Sua missão é ler esta lista de peças de reposição de autopeças e gerar uma análise cirúrgica combinada de controle de estoque obedecendo ao protocolo de 6 passos (ABC-XYZ, custo de oportunidade, alertas de estoque e lista de pedidos).
+      Você é o Agente de Estoque Fase 1 do Varejão Autopeças. Sua missão é ler esta lista de peças de reposição de autopeças e gerar uma análise cirúrgica combinada de controle de estoque obedecendo ao protocolo de 6 passos (ABC-XYZ, custo de oportunidade, alertas de estoque e lista de pedidos).
       
       Lista de SKUs fornecida:
       ${JSON.stringify(skus, null, 2)}
@@ -110,7 +110,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       - receitaEmRiscoTotal: number (soma das receitas em risco imediatas da amostra em reais)
       - economiasPotenciais: number (quanto capital pode ser liberado estancando compras redundantes)
       - top5Acoes: lista de até 5 ações imediatas contendo { acao: string, justificativa: string }
-      - notaAoComprador: considerações finais estratégicas provando o método da Era 1.
+      - notaAoComprador: considerações finais estratégicas provando o método da Fase 1.
 
       Retorne APENAS um JSON válido de acordo com o esquema acima de forma direta, sem tags markdown do tipo \`\`\`json no início ou fim.
     `;
