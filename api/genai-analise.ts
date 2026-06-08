@@ -52,15 +52,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       Lista de SKUs fornecida:
       ${JSON.stringify(skus, null, 2)}
       
-      Utilize as seguintes definições de negócios de autopeças:
-      - Classe ABC: baseada em preço * saída semanal média. ITENS A detêm ~70% do faturamento, B ~20%, C ~10%.
+      Utilize as seguintes definições de negócios de autopeças baseadas em demanda MENSAL:
+      - Consumo Mensal Médio (avgMonthlyDemand): Média dos valores do array 'saidas' (que agora representam consumo mensal).
+      - Consumo Diário Médio (avgDailyDemand): avgMonthlyDemand / 30.
+      - Consumo Semanal Médio (avgWeeklyDemand): avgMonthlyDemand / 4.33.
+      - Classe ABC: baseada em preço * avgWeeklyDemand * 8. ITENS A detêm ~70% do faturamento, B ~20%, C ~10%.
       - Classe XYZ (Variabilidade): X é estável, Y é moderadamente instável, Z é altamente errático/variável.
-      - Estoque de Segurança = (Lead Time em semanas * consumo_medio_semanal * 1.5) ou com folga adequada para Z.
-      - Ponto de Reposição = Estoque de Segurança + (Lead Time em semanas * consumo_medio_semanal).
-      - Dias até ruptura = estoqueAtual % consumo_diario.
-      - Alerta: "Crítico" se dias até ruptura < leadTimeDias; "Atenção" se está próximo do ponto de reposição; "Normal" caso contrário.
-      - Capital Imobilizado = estoque excessivo (acima da cobertura de 2 semanas) * custo.
-      - Qtd Sugerida para pedir: se houver alerta crítico ou atenção, sugerir quantidade para recompor para pelo menos 3 semanas de estoque respeitando o MCQ / MOQ (Quantidade mínima de pedido). Se estiver normal ou com excesso, sugerir 0.
+      - Estoque de Segurança (SS): 1.65 * (desvio_padrao_mensal / 5.48) * sqrt(leadTimeDias). Se o desvio padrão das saídas for 0 ou houver menos de 2 valores, assuma SS = 1.65 * (avgDailyDemand * 0.2) * sqrt(leadTimeDias).
+      - Ponto de Reposição (ROP): (avgDailyDemand * leadTimeDias) + Estoque de Segurança.
+      - Dias até ruptura: estoqueAtual / avgDailyDemand.
+      - Alerta: "Crítico" se dias até ruptura <= leadTimeDias; "Atenção" se estoqueAtual <= ROP; "Normal" caso contrário.
+      - Capital Imobilizado: se estoqueAtual > ROP + avgMonthlyDemand, calcule (estoqueAtual - (ROP + avgMonthlyDemand)) * custo. Caso contrário, 0.
+      - Receita em Risco: se nivelAlerta for "Crítico", calcule ((avgDailyDemand * leadTimeDias) - estoqueAtual) * preco. Caso contrário, 0.
+      - Qtd Sugerida para pedir: se houver alerta crítico ou atenção, sugerir quantidade para recompor o estoque até (ROP + avgMonthlyDemand) respeitando o MOQ (arredonde para cima para o próximo múltiplo inteiro de MOQ). Se estiver normal ou com excesso, sugerir 0.
       
       Gere uma resposta JSON estruturada que contenha exatamente duas chaves:
       1. "analises": Um array de objetos, onde cada objeto representa a análise de um SKU e atende fielmente à interface "AnaliseSku" do TypeScript.

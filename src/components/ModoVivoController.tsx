@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { SkuAmostra, AnaliseSku, RelatorioExecutivo } from "../types";
-import { Sparkles, Play, Plus, Trash2, ArrowLeft, Loader2, AlertCircle, RefreshCw, Layers, ShieldCheck, Info } from "lucide-react";
+import { Sparkles, Play, Plus, Trash2, ArrowLeft, Loader2, AlertCircle, RefreshCw, Layers, ShieldCheck, Info, Database, Check, FileText } from "lucide-react";
+import { supabase } from "../utils/supabaseClient";
 
 interface ModoVivoControllerProps {
   onBackToTese: () => void;
@@ -8,14 +9,14 @@ interface ModoVivoControllerProps {
 }
 
 export default function ModoVivoController({ onBackToTese, onAnalysisResult }: ModoVivoControllerProps) {
-  // Pre-populate with 3 items they can mess with
+  // Pre-populate with mock items representing typical inventory scenarios
   const [items, setItems] = useState<SkuAmostra[]>([
     {
       sku: "EMBR-DI",
       nome: "Kit de Embreagem LUK 622307500",
       categoria: "Transmissão",
       estoqueAtual: 1, // Becomes Critical!
-      saidas: [4, 6, 3, 5, 4, 3, 5, 4], // Méd ~4.25
+      saidas: [18, 16, 20], // Monthly demand averaging ~18
       custo: 350.00,
       preco: 620.00,
       leadTimeDias: 8,
@@ -26,7 +27,7 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
       nome: "Cabo de Vela NGK SC-T04",
       categoria: "Ignição",
       estoqueAtual: 50, // Becomes Excess!
-      saidas: [10, 8, 9, 7, 7, 10, 8, 9], // Méd ~8.5
+      saidas: [35, 38, 36], // Monthly demand averaging ~36.3
       custo: 42.00,
       preco: 85.00,
       leadTimeDias: 4,
@@ -41,32 +42,50 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
   // Form states to add new elements
   const [newSku, setNewSku] = useState("");
   const [newName, setNewName] = useState("");
+  const [newCategoria, setNewCategoria] = useState("Geral");
   const [newStock, setNewStock] = useState<number>(5);
   const [newCusto, setNewCusto] = useState<number>(50);
   const [newPreco, setNewPreco] = useState<number>(95);
+  const [newLeadTime, setNewLeadTime] = useState<number>(5);
+  const [newMoq, setNewMoq] = useState<number>(10);
+  const [newSaidas, setNewSaidas] = useState("15, 12, 18"); // Comma-separated monthly values
+
+  // DB Sync and Upload State
+  const [dbLoading, setDbLoading] = useState(false);
+  const [dbSuccessMessage, setDbSuccessMessage] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newSku.trim() || !newName.trim()) return;
 
+    // Parse the comma-separated monthly consumption history
+    const parsedSaidas = newSaidas
+      .split(",")
+      .map(num => parseInt(num.trim()) || 0);
+
     const newItem: SkuAmostra = {
       sku: newSku.toUpperCase().trim(),
       nome: newName.trim(),
-      categoria: "Geral",
+      categoria: newCategoria.trim(),
       estoqueAtual: Number(newStock),
-      saidas: [6, 5, 8, 4, 7, 5, 6, 7], // Default stable demand
+      saidas: parsedSaidas,
       custo: Number(newCusto),
       preco: Number(newPreco),
-      leadTimeDias: 5,
-      moq: 10
+      leadTimeDias: Number(newLeadTime),
+      moq: Number(newMoq)
     };
 
     setItems([...items, newItem]);
     setNewSku("");
     setNewName("");
+    setNewCategoria("Geral");
     setNewStock(5);
     setNewCusto(50);
     setNewPreco(95);
+    setNewLeadTime(5);
+    setNewMoq(10);
+    setNewSaidas("15, 12, 18");
   };
 
   const handleDeleteItem = (idx: number) => {
@@ -85,10 +104,154 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
     setItems(updated);
   };
 
-  // Costura A: Live API call using Express middleware
+  const handleUpdatePreco = (idx: number, price: number) => {
+    const updated = [...items];
+    updated[idx].preco = Math.max(0, price);
+    setItems(updated);
+  };
+
+  const handleUpdateSaidas = (idx: number, val: string) => {
+    const updated = [...items];
+    const parsed = val.split(",").map(num => parseInt(num.trim()) || 0);
+    updated[idx].saidas = parsed;
+    setItems(updated);
+  };
+
+  const handleLoadFromDb = async () => {
+    setDbLoading(true);
+    setErrorMessage(null);
+    setDbSuccessMessage(null);
+    try {
+      const { data, error } = await supabase
+        .from("skus_amostra")
+        .select("*");
+      if (error) throw error;
+      if (data && data.length > 0) {
+        const mappedItems: SkuAmostra[] = data.map((d: any) => ({
+          sku: d.sku,
+          nome: d.nome,
+          categoria: d.categoria || "Geral",
+          estoqueAtual: Number(d.estoqueAtual ?? 0),
+          saidas: Array.isArray(d.saidas) ? d.saidas.map(Number) : [10, 10, 10],
+          custo: Number(d.custo ?? 0),
+          preco: Number(d.preco ?? 0),
+          leadTimeDias: Number(d.leadTimeDias ?? 5),
+          moq: Number(d.moq ?? 1)
+        }));
+        setItems(mappedItems);
+        setDbSuccessMessage(`Sucesso! ${mappedItems.length} SKUs carregados do Supabase.`);
+      } else {
+        setErrorMessage("Nenhum dado encontrado na tabela skus_amostra.");
+      }
+    } catch (err: any) {
+      console.error(err);
+      setErrorMessage("Erro ao carregar dados do Supabase: " + err.message);
+    } finally {
+      setDbLoading(false);
+    }
+  };
+
+  const handleSaveToDb = async () => {
+    setDbLoading(true);
+    setErrorMessage(null);
+    setDbSuccessMessage(null);
+    try {
+      const { error } = await supabase
+        .from("skus_amostra")
+        .upsert(items, { onConflict: "sku" });
+
+      if (error) throw error;
+      setDbSuccessMessage(`Sucesso! ${items.length} SKUs sincronizados e salvos no Supabase.`);
+    } catch (err: any) {
+      console.error(err);
+      setErrorMessage("Erro ao salvar dados no Supabase: " + err.message);
+    } finally {
+      setDbLoading(false);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setErrorMessage(null);
+    setDbSuccessMessage(null);
+
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const resultStr = reader.result as string;
+          const base64Data = resultStr.split(",")[1];
+          if (!base64Data) {
+            throw new Error("Não foi possível ler o arquivo.");
+          }
+
+          const response = await fetch("/api/parse-document", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              fileBase64: base64Data,
+              mimeType: file.type || (file.name.endsWith(".csv") ? "text/csv" : "application/pdf"),
+              fileName: file.name
+            })
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || "Falha ao processar o arquivo.");
+          }
+
+          if (data.skus && Array.isArray(data.skus)) {
+            const parsedSkus: SkuAmostra[] = data.skus.map((s: any) => ({
+              sku: String(s.sku || "").toUpperCase().trim(),
+              nome: String(s.nome || "Produto Sem Nome"),
+              categoria: String(s.categoria || "Geral"),
+              estoqueAtual: Number(s.estoqueAtual ?? 0),
+              saidas: Array.isArray(s.saidas) ? s.saidas.map(Number) : [10, 10, 10],
+              custo: Number(s.custo ?? 50.00),
+              preco: Number(s.preco ?? 95.00),
+              leadTimeDias: Number(s.leadTimeDias ?? 5),
+              moq: Number(s.moq ?? 10)
+            }));
+
+            setItems((prev) => {
+              const prevMap = new Map(prev.map((item) => [item.sku, item]));
+              parsedSkus.forEach((skuObj) => {
+                prevMap.set(skuObj.sku, skuObj);
+              });
+              return Array.from(prevMap.values());
+            });
+
+            setDbSuccessMessage(`Sucesso! ${parsedSkus.length} SKUs importados do arquivo ${file.name}.`);
+          } else {
+            throw new Error("Estrutura de SKUs não retornada pelo parser de IA.");
+          }
+        } catch (err: any) {
+          console.error(err);
+          setErrorMessage("Erro ao processar arquivo: " + err.message);
+        } finally {
+          setUploading(false);
+        }
+      };
+      reader.onerror = () => {
+        setErrorMessage("Erro ao ler o arquivo no navegador.");
+        setUploading(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (err: any) {
+      console.error(err);
+      setErrorMessage("Falha ao abrir arquivo: " + err.message);
+      setUploading(false);
+    }
+  };
+
   const handleTriggerAnalysis = async () => {
     setIsLoading(true);
     setErrorMessage(null);
+    setDbSuccessMessage(null);
     setIsKeyMissing(false);
 
     try {
@@ -104,12 +267,11 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
         throw new Error(data.error || "Erro ao processar chamada do agente.");
       }
 
-      // Succeeded! Return result to app level
       onAnalysisResult(data);
     } catch (err: any) {
       console.error(err);
       setErrorMessage(err.message || "Erro de rede ao consultar o servidor.");
-      if (err.message.includes("GEMINI_API_KEY") || err.message.includes("chave de API")) {
+      if (err.message.includes("GEMINI_API_KEY") || err.message.includes("chave de API") || err.message.includes("não configurada")) {
         setIsKeyMissing(true);
       }
     } finally {
@@ -121,86 +283,123 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
   const handleRunSimulation = () => {
     setIsLoading(true);
     setErrorMessage(null);
+    setDbSuccessMessage(null);
 
     // Build authentic precalculated metrics matching Era 1 rules in the browser
     setTimeout(() => {
-      const simulatedAnalyses: AnaliseSku[] = items.map((item) => {
-        // Simple calc
-        const avgSalesWeek = item.saidas.reduce((a,b)=>a+b, 0) / item.saidas.length;
-        const rawStockWeeks = item.estoqueAtual / avgSalesWeek;
-        const isExcess = rawStockWeeks > 3;
-        const isCritical = rawStockWeeks < 1.3 && item.estoqueAtual < 10;
-        
-        let alertLevel: "Normal" | "Atenção" | "Crítico" = "Normal";
-        let suggestedQty = 0;
-        let justificacao = "";
-        let prioridade: "Máxima" | "Alta" | "Média" | "Baixa" = "Baixa";
+      try {
+        const simulatedAnalyses: AnaliseSku[] = items.map((item) => {
+          const N = item.saidas.length;
+          const avgMonthlyDemand = item.saidas.reduce((a, b) => a + b, 0) / N;
+          const avgDailyDemand = avgMonthlyDemand / 30;
+          const avgWeeklyDemand = avgMonthlyDemand / 4.33;
 
-        if (isCritical) {
-          alertLevel = "Crítico";
-          suggestedQty = Math.max(item.moq, Math.ceil(avgSalesWeek * 4));
-          prioridade = "Máxima";
-          justificacao = `Estoque crítico de apenas ${item.estoqueAtual} peças para a demanda média de ${avgSalesWeek.toFixed(1)}/semana. O fornecedor leva ${item.leadTimeDias} dias úteis para entregar. Compra imediata de ${suggestedQty} unidades sugerida para evitar colapso iminente física do CD.`;
-        } else if (isExcess) {
-          alertLevel = "Normal";
-          suggestedQty = 0;
-          prioridade = "Baixa";
-          justificacao = `Excesso de estoque identificado (cobertura de ${rawStockWeeks.toFixed(1)} semanas). Manter compras bloqueadas para evitar acúmulo desnecessário de capital ocioso. Liberar recursos para desimpedir o fluxo de caixa.`;
-        } else {
-          alertLevel = "Atenção";
-          suggestedQty = Math.max(item.moq, Math.ceil(avgSalesWeek * 2));
-          prioridade = "Média";
-          justificacao = `Estoque em nível de atenção com cobertura moderada. Sugere-se recomposição parcial preventiva de ${suggestedQty} unidades para manter o giro equilibrado.`;
-        }
+          // Standard deviation of monthly sales
+          let devMonthly = 0;
+          if (N >= 2) {
+            const variance = item.saidas.reduce((sum, val) => sum + Math.pow(val - avgMonthlyDemand, 2), 0) / (N - 1);
+            devMonthly = Math.sqrt(variance);
+          } else {
+            devMonthly = avgMonthlyDemand * 0.15; // default variation if 1 month
+          }
 
-        const capImobilizado = isExcess ? (item.estoqueAtual - Math.ceil(avgSalesWeek * 2)) * item.custo : 0;
-        const recEmRisco = isCritical ? avgSalesWeek * item.preco * 1.5 : 0;
+          // Convert to daily standard deviation
+          const devDaily = devMonthly / Math.sqrt(30);
 
-        return {
-          sku: item.sku,
-          nome: item.nome,
-          categoria: item.categoria,
-          receitaPotencial: item.preco * avgSalesWeek * 52,
-          classeABC: item.preco * avgSalesWeek > 500 ? "A" : "B",
-          cv: 0.16,
-          classeXYZ: "Y",
-          cluster: isCritical ? "AX (Giro Alto Crítico)" : isExcess ? "CY (Excesso Parado)" : "BY (Consumo Médio)",
-          prioridadeGestao: prioridade,
-          capitalImobilizado: Math.max(0, capImobilizado),
-          custoManutencaoSemana: Math.max(0, capImobilizado * 0.005),
-          custoRupturaEstimado: Math.max(0, recEmRisco * 0.5),
-          indicePrioridade: isCritical ? 90 : isExcess ? 10 : 50,
-          estoqueSeguranca: Math.ceil(avgSalesWeek * 1.2),
-          pontoReposicao: Math.ceil(avgSalesWeek * 2.0),
-          diasAteRuptura: Math.max(0, item.estoqueAtual / (avgSalesWeek / 6)),
-          nivelAlerta: alertLevel,
-          receitaEmRisco: recEmRisco,
-          qtdSugerida: suggestedQty,
-          valorPedido: suggestedQty * item.custo,
-          prazoChegada: item.leadTimeDias,
-          justificativa: justificacao
+          // Safety Stock (Z = 1.65)
+          const safetyStock = Math.ceil(1.65 * devDaily * Math.sqrt(item.leadTimeDias));
+          // Reorder Point
+          const reorderPoint = Math.ceil((avgDailyDemand * item.leadTimeDias) + safetyStock);
+          // Days until stockout
+          const diasAteRuptura = avgDailyDemand > 0 ? (item.estoqueAtual / avgDailyDemand) : 999;
+
+          // Status & Alerts
+          let alertLevel: "Normal" | "Atenção" | "Crítico" = "Normal";
+          if (diasAteRuptura <= item.leadTimeDias) {
+            alertLevel = "Crítico";
+          } else if (item.estoqueAtual <= reorderPoint) {
+            alertLevel = "Atenção";
+          }
+
+          // Suggested order quantity (order up to ROP + avgMonthlyDemand)
+          let suggestedQty = 0;
+          let prioridade: "Máxima" | "Alta" | "Média" | "Baixa" = "Baixa";
+          let justificacao = "";
+
+          if (alertLevel === "Crítico" || alertLevel === "Atenção") {
+            const deficit = (reorderPoint + avgMonthlyDemand) - item.estoqueAtual;
+            // Round to nearest higher multiple of MOQ
+            suggestedQty = Math.max(item.moq, Math.ceil(deficit / item.moq) * item.moq);
+            prioridade = alertLevel === "Crítico" ? "Máxima" : "Alta";
+            justificacao = `Estoque de segurança comprometido (${item.estoqueAtual} un) frente a uma demanda média mensal de ${avgMonthlyDemand.toFixed(0)} un. Gatilho de reabastecimento acionado (Ponto de Reposição ótimo de ${reorderPoint} un). Sugerido pedido de compra de ${suggestedQty} un respeitando o MOQ (${item.moq} un).`;
+          } else {
+            prioridade = "Baixa";
+            justificacao = `Estoque equilibrado em ${item.estoqueAtual} un. O saldo atual cobre confortavelmente o Lead Time de ${item.leadTimeDias} dias e o estoque de segurança. Sem necessidade de reposição no momento.`;
+          }
+
+          // Excess capital: value of stock exceeding target maximum (ROP + avgMonthlyDemand)
+          const maxTargetStock = reorderPoint + avgMonthlyDemand;
+          const isExcess = item.estoqueAtual > maxTargetStock;
+          const capImobilizado = isExcess ? (item.estoqueAtual - maxTargetStock) * item.custo : 0;
+
+          if (isExcess) {
+            justificacao = `Excesso de estoque detectado: ${item.estoqueAtual} un excede o teto recomendado de ${maxTargetStock.toFixed(0)} un. Capital de R$ ${capImobilizado.toFixed(2)} imobilizado desnecessariamente no almoxarifado. Compra suspensa para economizar caixa.`;
+          }
+
+          // Revenue at risk (deficit during lead time * preco)
+          const leadTimeDemand = avgDailyDemand * item.leadTimeDias;
+          const riskDeficit = leadTimeDemand - item.estoqueAtual;
+          const recEmRisco = alertLevel === "Crítico" && riskDeficit > 0 ? riskDeficit * item.preco : 0;
+
+          return {
+            sku: item.sku,
+            nome: item.nome,
+            categoria: item.categoria,
+            receitaPotencial: item.preco * avgWeeklyDemand * 8, // 8-week horizon potential revenue
+            classeABC: (item.preco * avgWeeklyDemand) > 500 ? "A" : (item.preco * avgWeeklyDemand) > 150 ? "B" : "C",
+            cv: avgMonthlyDemand > 0 ? (devMonthly / avgMonthlyDemand) : 0,
+            classeXYZ: devMonthly / avgMonthlyDemand > 0.4 ? "Z" : devMonthly / avgMonthlyDemand > 0.15 ? "Y" : "X",
+            cluster: alertLevel === "Crítico" ? `${(item.preco * avgWeeklyDemand) > 500 ? "AX" : "BX"} (Giro Alto Crítico)` : isExcess ? "CY (Excesso Parado)" : "BY (Consumo Médio)",
+            prioridadeGestao: prioridade,
+            capitalImobilizado: Math.max(0, capImobilizado),
+            custoManutencaoSemana: Math.max(0, capImobilizado * 0.005),
+            custoRupturaEstimado: Math.max(0, recEmRisco * 0.5),
+            indicePrioridade: alertLevel === "Crítico" ? 90 : alertLevel === "Atenção" ? 60 : 10,
+            estoqueSeguranca: safetyStock,
+            pontoReposicao: reorderPoint,
+            diasAteRuptura: diasAteRuptura,
+            nivelAlerta: alertLevel,
+            receitaEmRisco: recEmRisco,
+            qtdSugerida: suggestedQty,
+            valorPedido: suggestedQty * item.custo,
+            prazoChegada: item.leadTimeDias,
+            justificativa: justificacao
+          };
+        });
+
+        // Summary Report
+        const totalImobilizadoSim = simulatedAnalyses.reduce((sum, item) => sum + item.capitalImobilizado, 0);
+        const totalRupturaSim = simulatedAnalyses.reduce((sum, item) => sum + item.receitaEmRisco, 0);
+
+        const reportSim: RelatorioExecutivo = {
+          situacao: `A simulação com dados mensais indicou desvios de saldo. Foram encontrados R$ ${totalImobilizadoSim.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} em estoque excedente parado frente a R$ ${totalRupturaSim.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} em risco logístico imediato.`,
+          capitalImobilizadoTotal: totalImobilizadoSim,
+          receitaEmRiscoTotal: totalRupturaSim,
+          economiasPotenciais: totalImobilizadoSim,
+          top5Acoes: simulatedAnalyses.filter(i => i.qtdSugerida > 0).map(i => ({
+            acao: `Gatilho de Reposição: Pedir ${i.qtdSugerida} un do SKU ${i.sku} (MOQ: ${i.moq}).`,
+            justificativa: i.justificativa
+          })),
+          notaAoComprador: "Decisão simulada em conformidade com as regras financeiras da Era 1. O saldo é calculado usando o consumo diário derivado da média mensal e desvio padrão para calibrar o estoque de segurança."
         };
-      });
 
-      // Report
-      const totalImobilizadoSim = simulatedAnalyses.reduce((sum, item) => sum + item.capitalImobilizado, 0);
-      const totalRupturaSim = simulatedAnalyses.reduce((sum, item) => sum + item.receitaEmRisco, 0);
-      const totalPedidoSim = simulatedAnalyses.reduce((sum, item) => sum + item.valorPedido, 0);
-
-      const reportSim: RelatorioExecutivo = {
-        situacao: `A simulação local indicou desvios de saldo. Foram encontrados R$ ${totalImobilizadoSim.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} em estoque excedente parado frente a R$ ${totalRupturaSim.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} em risco logístico imediato.`,
-        capitalImobilizadoTotal: totalImobilizadoSim,
-        receitaEmRiscoTotal: totalRupturaSim,
-        economiasPotenciais: totalImobilizadoSim,
-        top5Acoes: simulatedAnalyses.filter(i=>i.qtdSugerida > 0).map(i => ({
-          acao: `Pedido Preventivo: ${i.qtdSugerida} un de ${i.sku}.`,
-          justificativa: i.justificativa
-        })),
-        notaAoComprador: "Esta decisão local de modelagem reproduz as regras financeiras da Era 1 perfeitamente, provando o método de desimobilização de capital sem risco de conectividade."
-      };
-
-      setIsLoading(false);
-      onAnalysisResult({ analises: simulatedAnalyses, relatorio: reportSim });
+        setIsLoading(false);
+        onAnalysisResult({ analises: simulatedAnalyses, relatorio: reportSim });
+      } catch (err: any) {
+        console.error(err);
+        setErrorMessage("Erro ao executar simulação local: " + err.message);
+        setIsLoading(false);
+      }
     }, 1200);
   };
 
@@ -227,9 +426,63 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
           Simulador Inteligente <span className="text-brand-teal italic">Era 1</span>
         </h2>
         <p className="text-slate-405 text-sm max-w-2xl leading-relaxed">
-          Altere as quantidades em estoque e custos unitários abaixo ou adicione novos SKUs de autopeças. Teste cenários de subestocagem crítica ou excesso e sinta a inteligência da allla reorganizar o caixa da revenda de forma proativa.
+          Altere as quantidades em estoque, custos, preços e histórico de vendas mensais. Suba planilhas ou relatórios em PDF com OCR inteligente. Salve as simulações diretamente na nuvem do Supabase.
         </p>
       </div>
+
+      {/* DB & Document Upload Control Bar */}
+      <div className="p-5 bg-brand-navy border border-slate-800/40 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-4">
+        {/* Supabase Actions */}
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <button
+            onClick={handleLoadFromDb}
+            disabled={dbLoading}
+            className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-mono text-white border border-slate-700/50 flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-50"
+            title="Carregar lote completo de SKUs do Supabase"
+          >
+            {dbLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-teal" /> : <Database className="w-3.5 h-3.5 text-brand-teal" />}
+            <span>Carregar do Banco</span>
+          </button>
+
+          <button
+            onClick={handleSaveToDb}
+            disabled={dbLoading}
+            className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-mono text-white border border-slate-700/50 flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-50"
+            title="Salvar alterações do lote atual no Supabase"
+          >
+            {dbLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-teal" /> : <Check className="w-3.5 h-3.5 text-emerald-400" />}
+            <span>Salvar no Banco</span>
+          </button>
+        </div>
+
+        {/* File Drag-and-drop / selector */}
+        <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+          <div className="relative">
+            <input
+              type="file"
+              accept=".csv,.pdf"
+              onChange={handleFileUpload}
+              disabled={uploading}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 disabled:cursor-not-allowed"
+            />
+            <button
+              disabled={uploading}
+              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-xs font-mono text-slate-950 font-bold flex items-center gap-2 cursor-pointer transition-all hover:scale-[1.01] disabled:opacity-50"
+            >
+              {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-950" /> : <FileText className="w-3.5 h-3.5 fill-slate-950" />}
+              <span>Subir Relatório (CSV / PDF)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* FEEDBACK STATUS TOAST */}
+      {dbSuccessMessage && (
+        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/35 text-xs text-emerald-400 font-mono flex items-center gap-2">
+          <Check className="w-4 h-4 shrink-0 text-emerald-400" />
+          <span>{dbSuccessMessage}</span>
+        </div>
+      )}
 
       {/* ERROR CORNER / SECRETS GUIDE COUPLING */}
       {errorMessage && (
@@ -238,7 +491,7 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
             <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
             <div>
               <h4 className="font-semibold text-red-400 text-sm font-sans">
-                {isKeyMissing ? "GEMINI_API_KEY Não Localizada no Workspace" : "Falha na chamada ao Modelo da IA"}
+                {isKeyMissing ? "GEMINI_API_KEY Não Localizada no Workspace" : "Falha na chamada ao Modelo da IA ou Banco de Dados"}
               </h4>
               <p className="text-xs text-slate-300 mt-1 leading-relaxed">
                 {errorMessage}
@@ -254,7 +507,7 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
               <ol className="list-decimal pl-5 space-y-1.5 leading-relaxed text-slate-400 font-sans">
                 <li>No editor do AI Studio, abra o menu de engrenagem <strong>Configurações &gt; Secrets</strong> no painel de cabeçalho.</li>
                 <li>Adicione uma nova chave com o nome exato de <code>GEMINI_API_KEY</code> e cole sua chave API pessoal do Google.</li>
-                <li>Nossas rotas Express full-stack passarão a consultar a IA instantaneamente a cada lote enviado!</li>
+                <li>Nossas rotas Express passantes passarão a consultar a IA e realizar OCR em tempo real a cada lote enviado!</li>
               </ol>
               <div className="pt-2">
                 <button
@@ -276,7 +529,7 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
             Configure seu Lote de Testes (SKUs Modificáveis)
           </h3>
           <span className="text-xs text-slate-500 font-mono">
-            Modifique quantidades e custos abaixo
+            Modifique saldo físico, custos, preços e vendas mensais históricas abaixo
           </span>
         </div>
 
@@ -287,10 +540,10 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
               <tr className="bg-brand-navy-light text-slate-400 border-b border-slate-800/40 font-mono text-[10px]">
                 <th className="p-3">SKU</th>
                 <th className="p-3">Peça de Reposição</th>
-                <th className="p-3 text-center w-28">Estoque Atual</th>
-                <th className="p-3 text-center w-36">Custo Unitário</th>
-                <th className="p-3 text-right">Preço de Venda</th>
-                <th className="p-3 text-center font-semibold">Consumos Fictícios Recentes</th>
+                <th className="p-3 text-center w-24">Estoque Atual</th>
+                <th className="p-3 text-center w-28">Custo Unitário</th>
+                <th className="p-3 text-center w-28">Preço de Venda</th>
+                <th className="p-3 text-center w-36 font-semibold">Vendas Mensais Recentes</th>
                 <th className="p-3 text-right">Ação</th>
               </tr>
             </thead>
@@ -318,11 +571,25 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
                       />
                     </div>
                   </td>
-                  <td className="p-3 text-right text-slate-350">R$ {item.preco.toFixed(2)}</td>
                   <td className="p-3 text-center">
-                    <span className="px-1.5 py-0.5 bg-brand-navy-dark border border-slate-800/60 rounded text-slate-400 text-[10px]">
-                      [{item.saidas.join(", ")}]
-                    </span>
+                    <div className="flex items-center justify-center gap-1 font-mono">
+                      <span className="text-[10px] text-slate-500">R$</span>
+                      <input
+                        type="number"
+                        value={item.preco}
+                        onChange={(e) => handleUpdatePreco(idx, Number(e.target.value))}
+                        className="w-20 px-1.5 py-1 bg-brand-navy-dark border border-slate-800 rounded text-center text-slate-205 focus:outline-none focus:border-brand-teal/60"
+                      />
+                    </div>
+                  </td>
+                  <td className="p-3 text-center">
+                    <input
+                      type="text"
+                      value={item.saidas.join(", ")}
+                      onChange={(e) => handleUpdateSaidas(idx, e.target.value)}
+                      className="w-28 px-1.5 py-1 bg-brand-navy-dark border border-slate-800 rounded text-center text-slate-205 font-mono focus:outline-none focus:border-brand-teal/60"
+                      title="Separe por vírgulas (Ex: 45, 52, 49)"
+                    />
                   </td>
                   <td className="p-3 text-right">
                     <button
@@ -341,40 +608,100 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
 
         {/* ADD NEW ITEM FORM ROW */}
         <form onSubmit={handleAddItem} className="space-y-4 pt-4 border-t border-slate-800/40">
-          <span className="font-mono text-[10px] text-slate-500 block uppercase font-bold tracking-wider">ADICIONAR NOVO SKU DE TESTE</span>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <input
-              type="text"
-              placeholder="SKU (Ex: PAST-AS)"
-              value={newSku}
-              onChange={(e) => setNewSku(e.target.value)}
-              className="p-2.5 text-xs bg-brand-navy-dark border border-slate-800 rounded-lg focus:outline-none focus:border-brand-teal/50 text-white placeholder-slate-600 font-mono font-semibold"
-              required
-            />
-            <input
-              type="text"
-              placeholder="Descrição da autopeça"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              className="p-2.5 text-xs bg-brand-navy-dark border border-slate-800 rounded-lg focus:outline-none focus:border-brand-teal/50 text-white placeholder-slate-600 col-span-1 md:col-span-2 font-sans"
-              required
-            />
-            <input
-              type="number"
-              placeholder="Estoque"
-              value={newStock}
-              onChange={(e) => setNewStock(Number(e.target.value))}
-              className="p-2.5 text-xs bg-brand-navy-dark border border-slate-800 rounded-lg focus:outline-none focus:border-brand-teal/50 text-white font-mono"
-              min="0"
-              required
-            />
-            <button
-              type="submit"
-              className="p-2.5 rounded-lg bg-brand-navy-dark border border-slate-800 hover:bg-slate-800/40 text-xs text-white flex items-center justify-center gap-1 cursor-pointer transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5 text-brand-teal" />
-              <span>Adicionar SKU</span>
-            </button>
+          <span className="font-mono text-[10px] text-slate-500 block uppercase font-bold tracking-wider">ADICIONAR NOVO SKU DE TESTE (VARIÁVEIS DE CONTROLE DE COMPRAS)</span>
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+              <input
+                type="text"
+                placeholder="SKU (Ex: EMBR-DI)"
+                value={newSku}
+                onChange={(e) => setNewSku(e.target.value)}
+                className="p-2.5 text-xs bg-brand-navy-dark border border-slate-800 rounded-lg focus:outline-none focus:border-brand-teal/50 text-white placeholder-slate-600 font-mono font-semibold"
+                required
+              />
+              <input
+                type="text"
+                placeholder="Descrição (Ex: Kit de Embreagem)"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                className="p-2.5 text-xs bg-brand-navy-dark border border-slate-800 rounded-lg focus:outline-none focus:border-brand-teal/50 text-white placeholder-slate-600 col-span-1 md:col-span-2 font-sans"
+                required
+              />
+              <input
+                type="text"
+                placeholder="Categoria (Ex: Suspensão)"
+                value={newCategoria}
+                onChange={(e) => setNewCategoria(e.target.value)}
+                className="p-2.5 text-xs bg-brand-navy-dark border border-slate-800 rounded-lg focus:outline-none focus:border-brand-teal/50 text-white placeholder-slate-600 font-sans"
+                required
+              />
+              <input
+                type="number"
+                placeholder="Estoque Atual"
+                value={newStock}
+                onChange={(e) => setNewStock(Number(e.target.value))}
+                className="p-2.5 text-xs bg-brand-navy-dark border border-slate-800 rounded-lg focus:outline-none focus:border-brand-teal/50 text-white font-mono"
+                min="0"
+                required
+              />
+              <input
+                type="number"
+                placeholder="Custo (R$)"
+                value={newCusto}
+                onChange={(e) => setNewCusto(Number(e.target.value))}
+                className="p-2.5 text-xs bg-brand-navy-dark border border-slate-800 rounded-lg focus:outline-none focus:border-brand-teal/50 text-white font-mono"
+                min="0"
+                required
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              <input
+                type="number"
+                placeholder="Preço Venda (R$)"
+                value={newPreco}
+                onChange={(e) => setNewPreco(Number(e.target.value))}
+                className="p-2.5 text-xs bg-brand-navy-dark border border-slate-800 rounded-lg focus:outline-none focus:border-brand-teal/50 text-white font-mono"
+                min="0"
+                required
+              />
+              <input
+                type="number"
+                placeholder="Lead Time (Dias)"
+                value={newLeadTime}
+                onChange={(e) => setNewLeadTime(Number(e.target.value))}
+                className="p-2.5 text-xs bg-brand-navy-dark border border-slate-800 rounded-lg focus:outline-none focus:border-brand-teal/50 text-white font-mono"
+                min="0"
+                required
+              />
+              <input
+                type="number"
+                placeholder="MOQ (Lote Mínimo)"
+                value={newMoq}
+                onChange={(e) => setNewMoq(Number(e.target.value))}
+                className="p-2.5 text-xs bg-brand-navy-dark border border-slate-800 rounded-lg focus:outline-none focus:border-brand-teal/50 text-white font-mono"
+                min="1"
+                required
+              />
+              <input
+                type="text"
+                placeholder="Vendas Mensais (Ex: 15, 12, 18)"
+                value={newSaidas}
+                onChange={(e) => setNewSaidas(e.target.value)}
+                className="p-2.5 text-xs bg-brand-navy-dark border border-slate-800 rounded-lg focus:outline-none focus:border-brand-teal/50 text-white font-mono font-semibold col-span-1 md:col-span-2"
+                required
+              />
+            </div>
+            
+            <div className="flex justify-end pt-1">
+              <button
+                type="submit"
+                className="w-full sm:w-auto px-6 py-2.5 rounded-lg bg-brand-navy-dark border border-slate-800 hover:bg-slate-800/40 text-xs text-white flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+              >
+                <Plus className="w-4 h-4 text-brand-teal" />
+                <span>Adicionar Novo SKU ao Lote</span>
+              </button>
+            </div>
           </div>
         </form>
 
@@ -390,7 +717,7 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
             ) : (
               <Sparkles className="w-4 h-4 fill-slate-950 text-slate-950" />
             )}
-            <span>Auditar Lote com Inteligência (IA Real)</span>
+            <span>Auditar Lote com Inteligência Artificial (IA Real)</span>
           </button>
 
           <button
@@ -414,10 +741,11 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
           <span>•</span>
           <span className="flex items-center gap-1">
             <Info className="w-3 text-brand-teal" />
-            Fiel às 6 Regras de Negócio do Agente Era 1
+            Fiel às Diretrizes do Color System e Métricas Mensais da allla
           </span>
         </div>
       </div>
     </div>
   );
 }
+

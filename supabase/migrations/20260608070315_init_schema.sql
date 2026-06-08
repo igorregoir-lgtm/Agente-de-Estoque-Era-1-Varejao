@@ -21,21 +21,16 @@ CREATE TABLE IF NOT EXISTS ajustes_pedidos (
 );
 
 -- Table for raw SKU sample data
-CREATE TABLE IF NOT EXISTS skus_amostra (
+DROP TABLE IF EXISTS skus_amostra;
+CREATE TABLE skus_amostra (
     sku TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    estoque INTEGER NOT NULL,
-    s1 INTEGER NOT NULL,
-    s2 INTEGER NOT NULL,
-    s3 INTEGER NOT NULL,
-    s4 INTEGER NOT NULL,
-    s5 INTEGER NOT NULL,
-    s6 INTEGER NOT NULL,
-    s7 INTEGER NOT NULL,
-    s8 INTEGER NOT NULL,
+    nome TEXT NOT NULL,
+    categoria TEXT NOT NULL,
+    "estoqueAtual" INTEGER NOT NULL,
+    saidas INTEGER[] NOT NULL,
     custo NUMERIC(10,2) NOT NULL,
     preco NUMERIC(10,2) NOT NULL,
-    lt INTEGER NOT NULL, -- Lead time in business days
+    "leadTimeDias" INTEGER NOT NULL, -- Lead time in business days
     moq INTEGER NOT NULL -- Minimum order quantity
 );
 

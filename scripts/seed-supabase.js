@@ -41,21 +41,21 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const skusData = [
-  { sku: 'FILT-OL-001', name: 'Filtro de Óleo Universal', estoque: 45, s1: 28, s2: 32, s3: 25, s4: 30, s5: 35, s6: 28, s7: 31, s8: 29, custo: 12.00, preco: 22.00, lt: 2, moq: 24 },
-  { sku: 'PAST-FR-001', name: 'Pastilha Freio Dianteira', estoque: 8, s1: 15, s2: 18, s3: 12, s4: 16, s5: 14, s6: 17, s7: 15, s8: 16, custo: 45.00, preco: 89.00, lt: 3, moq: 4 },
-  { sku: 'CORR-DIS-001', name: 'Correia Dentada Kit', estoque: 2, s1: 4, s2: 3, s3: 5, s4: 4, s5: 3, s6: 4, s7: 5, s8: 3, custo: 120.00, preco: 220.00, lt: 7, moq: 2 },
-  { sku: 'VELA-IG-001', name: 'Vela de Ignição (jogo)', estoque: 60, s1: 22, s2: 25, s3: 18, s4: 24, s5: 26, s6: 20, s7: 23, s8: 25, custo: 35.00, preco: 65.00, lt: 2, moq: 12 },
-  { sku: 'JUNT-TM-001', name: 'Junta do Cabeçote', estoque: 0, s1: 1, s2: 0, s3: 2, s4: 1, s5: 0, s6: 1, s7: 2, s8: 1, custo: 380.00, preco: 680.00, lt: 10, moq: 1 },
-  { sku: 'AMORT-F-001', name: 'Amortecedor Dianteiro (par)', estoque: 6, s1: 3, s2: 2, s3: 4, s4: 3, s5: 2, s6: 3, s7: 2, s8: 3, custo: 280.00, preco: 520.00, lt: 5, moq: 2 },
-  { sku: 'FILT-AR-001', name: 'Filtro de Ar', estoque: 30, s1: 18, s2: 20, s3: 16, s4: 19, s5: 21, s6: 17, s7: 20, s8: 18, custo: 18.00, preco: 35.00, lt: 2, moq: 12 },
-  { sku: 'BOMB-AG-001', name: "Bomba d'Água", estoque: 3, s1: 2, s2: 1, s3: 2, s4: 1, s5: 2, s6: 1, s7: 1, s8: 2, custo: 165.00, preco: 295.00, lt: 6, moq: 1 },
-  { sku: 'BUJE-BA-001', name: 'Buje de Bandeja', estoque: 20, s1: 8, s2: 10, s3: 7, s4: 9, s5: 11, s6: 8, s7: 9, s8: 10, custo: 28.00, preco: 55.00, lt: 2, moq: 4 },
-  { sku: 'SENS-OX-001', name: 'Sensor Lambda / O2', estoque: 1, s1: 2, s2: 1, s3: 3, s4: 2, s5: 1, s6: 2, s7: 2, s8: 1, custo: 185.00, preco: 340.00, lt: 8, moq: 1 },
-  { sku: 'ROLA-KM-001', name: 'Rolamento de Roda', estoque: 12, s1: 5, s2: 6, s3: 4, s4: 5, s5: 7, s6: 5, s7: 6, s8: 5, custo: 95.00, preco: 175.00, lt: 4, moq: 2 },
-  { sku: 'BATE-60A-001', name: 'Bateria 60Ah', estoque: 4, s1: 3, s2: 2, s3: 1, s4: 2, s5: 4, s6: 5, s7: 6, s8: 7, custo: 290.00, preco: 520.00, lt: 3, moq: 1 },
-  { sku: 'FILT-CB-001', name: 'Filtro de Cabine', estoque: 22, s1: 8, s2: 7, s3: 9, s4: 8, s5: 10, s6: 7, s7: 8, s8: 9, custo: 25.00, preco: 48.00, lt: 2, moq: 6 },
-  { sku: 'PAST-TR-001', name: 'Pastilha Freio Traseira', estoque: 5, s1: 9, s2: 8, s3: 10, s4: 9, s5: 8, s6: 10, s7: 9, s8: 8, custo: 38.00, preco: 72.00, lt: 3, moq: 4 },
-  { sku: 'EMBL-CL-001', name: 'Kit Embreagem Completo', estoque: 1, s1: 1, s2: 0, s3: 1, s4: 1, s5: 0, s6: 1, s7: 0, s8: 1, custo: 520.00, preco: 920.00, lt: 12, moq: 1 }
+  { sku: "JUNT-TM", nome: "Junta Homocinética Vetor VT5031", categoria: "Transmissão", estoqueAtual: 2, saidas: [58, 52, 60], custo: 180.00, preco: 310.00, leadTimeDias: 10, moq: 10 },
+  { sku: "PAST-FR", nome: "Pastilha Freio Diant. Cobreq N-2032", categoria: "Freios", estoqueAtual: 5, saidas: [95, 102, 98], custo: 65.00, preco: 110.00, leadTimeDias: 5, moq: 20 },
+  { sku: "SENS-OX", nome: "Sensor de Oxigênio Bosch Sonda Lambda", categoria: "Injeção", estoqueAtual: 1, saidas: [18, 22, 20], custo: 145.00, preco: 290.00, leadTimeDias: 7, moq: 5 },
+  { sku: "AMOR-DI", nome: "Amortecedor Diant. Cofap GP32282", categoria: "Suspensão", estoqueAtual: 85, saidas: [35, 40, 36], custo: 210.00, preco: 390.00, leadTimeDias: 12, moq: 4 },
+  { sku: "OL-MO", nome: "Óleo de Motor Castrol Edge 5W30 Sintético", categoria: "Lubrificantes", estoqueAtual: 120, saidas: [275, 290, 285], custo: 32.00, preco: 58.00, leadTimeDias: 4, moq: 48 },
+  { sku: "FIL-AR", nome: "Filtro de Ar Tecfil ARL1032", categoria: "Filtros", estoqueAtual: 45, saidas: [72, 80, 75], custo: 18.00, preco: 35.00, leadTimeDias: 5, moq: 20 },
+  { sku: "BOM-AG", nome: "Bomba d'Água Urba UB0621", categoria: "Arrefecimento", estoqueAtual: 6, saidas: [40, 45, 41], custo: 115.00, preco: 210.00, leadTimeDias: 7, moq: 12 },
+  { sku: "DISC-FR", nome: "Disco de Freio Diant. Fremax BD4412", categoria: "Freios", estoqueAtual: 8, saidas: [58, 64, 60], custo: 90.00, preco: 175.00, leadTimeDias: 6, moq: 10 },
+  { sku: "VEL-IG", nome: "Jogo de Vela de Ignição NGK BKR7E", categoria: "Ignição", estoqueAtual: 50, saidas: [45, 52, 49], custo: 45.00, preco: 85.00, leadTimeDias: 5, moq: 10 },
+  { sku: "BOB-IG", nome: "Bobina de Ignição Magneti Marelli BI0022", categoria: "Ignição", estoqueAtual: 4, saidas: [16, 20, 18], custo: 135.00, preco: 250.00, leadTimeDias: 8, moq: 5 },
+  { sku: "COR-DE", nome: "Correia Dentada Gates 40859x19XS", categoria: "Transmissão", estoqueAtual: 22, saidas: [30, 42, 33], custo: 55.00, preco: 105.00, leadTimeDias: 9, moq: 15 },
+  { sku: "FIL-OL", nome: "Filtro de Óleo Tecfil PSL74", categoria: "Filtros", estoqueAtual: 180, saidas: [245, 260, 250], custo: 12.00, preco: 24.00, leadTimeDias: 5, moq: 50 },
+  { sku: "ROL-TR", nome: "Rolamento de Roda Traseira SKF BAH-0062", categoria: "Rolamentos", estoqueAtual: 35, saidas: [10, 12, 11], custo: 80.00, preco: 160.00, leadTimeDias: 10, moq: 5 },
+  { sku: "BIE-DI", nome: "Bieleta Dianteira Cofap BTC01103", categoria: "Suspensão", estoqueAtual: 3, saidas: [46, 52, 48], custo: 35.00, preco: 68.00, leadTimeDias: 6, moq: 15 },
+  { sku: "FIL-CO", nome: "Filtro de Combustível Fram G5857", categoria: "Filtros", estoqueAtual: 200, saidas: [170, 185, 180], custo: 15.00, preco: 30.00, leadTimeDias: 4, moq: 50 }
 ];
 
 async function seed() {

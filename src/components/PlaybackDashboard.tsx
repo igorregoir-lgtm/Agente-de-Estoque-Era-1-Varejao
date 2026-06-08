@@ -323,7 +323,7 @@ export default function PlaybackDashboard({ onComplete, liveData }: PlaybackDash
                 <div className="text-xl md:text-2xl font-mono text-yellow-500 font-bold mt-1">
                   R$ {currentStep >= 4 ? totalPedido.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0,00"}
                 </div>
-                <p className="text-[11px] text-slate-500 mt-1">Gasto total na lista semanal de reposição</p>
+                <p className="text-[11px] text-slate-500 mt-1">Gasto total na lista sugerida de reposição</p>
               </div>
             </div>
 
@@ -391,7 +391,7 @@ export default function PlaybackDashboard({ onComplete, liveData }: PlaybackDash
                         <th className="p-3">SKU</th>
                         <th className="p-3">Descrição da Peça</th>
                         <th className="p-3 text-right">Estoque</th>
-                        <th className="p-3 text-center">Últimas 8 Semanas de Saídas</th>
+                        <th className="p-3 text-center">Histórico de Consumo Mensal</th>
                         <th className="p-3 text-right">Custo Unit.</th>
                         <th className="p-3 text-right">Preço Venda</th>
                       </tr>
@@ -648,7 +648,7 @@ export default function PlaybackDashboard({ onComplete, liveData }: PlaybackDash
                   </span>
                 </div>
                 <p className="text-xs text-slate-400">
-                  Foco na blindagem. O Agente destaca apenas os itens que atingiram estado de urgência. Lead time em semanas e consumo diário são confrontados matematicamente.
+                  Foco na blindagem. O Agente destaca apenas os itens que atingiram estado de segurança comprometido. Lead time em dias e consumo diário são confrontados matematicamente.
                 </p>
 
                 <div className="flex-1 space-y-3">
@@ -785,7 +785,7 @@ export default function PlaybackDashboard({ onComplete, liveData }: PlaybackDash
                   <div className="flex items-center justify-between">
                     <h3 className="text-base font-display font-medium text-slate-300 flex items-center gap-1.5 animate-pulse-glow">
                       <FileText className="w-4 h-4 text-brand-teal" />
-                      Etapa 5: Diagnóstico strategic por IA (Relatório de Linha C-S-G)
+                      Etapa 5: Diagnóstico estratégico por IA (Relatório de Linha C-S-G)
                     </h3>
                     <span className="text-[11px] font-mono px-2 py-1 bg-amber-500/20 text-yellow-305 border border-yellow-500/20 rounded">
                       Enviado por Agente
@@ -819,7 +819,7 @@ export default function PlaybackDashboard({ onComplete, liveData }: PlaybackDash
 
                     <div className="space-y-3">
                       <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-2">
-                        TOP 5 PLANO DE AÇÃO CIRÚRGICA DA SEMANA
+                        TOP 5 PLANO DE AÇÃO CIRÚRGICA IMEDIATA
                       </span>
                       <ol className="space-y-2 text-xs font-mono text-slate-300 list-decimal pl-4">
                         {activeReport.top5Acoes.map((action, idx) => (

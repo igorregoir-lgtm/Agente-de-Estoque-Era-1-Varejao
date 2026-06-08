@@ -35,6 +35,7 @@ export interface AnaliseSku {
   justificativa: string;
   estoqueAtual?: number;
   custo?: number;
+  moq?: number;
 }
 
 export interface RelatorioExecutivo {

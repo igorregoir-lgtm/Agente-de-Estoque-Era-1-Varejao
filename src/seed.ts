@@ -6,10 +6,10 @@ export const SKUS_AM_DADOS: SkuAmostra[] = [
     nome: "Junta Homocinética Vetor VT5031",
     categoria: "Transmissão",
     estoqueAtual: 2,
-    saidas: [14, 12, 15, 10, 16, 11, 13, 14], // Média ~13.1/sem. Super estável
+    saidas: [58, 52, 60], // Média ~56.7/mês (anteriormente ~13.1/sem)
     custo: 180.00,
     preco: 310.00,
-    leadTimeDias: 10, // ~1.4 semanas
+    leadTimeDias: 10,
     moq: 10
   },
   {
@@ -17,7 +17,7 @@ export const SKUS_AM_DADOS: SkuAmostra[] = [
     nome: "Pastilha Freio Diant. Cobreq N-2032",
     categoria: "Freios",
     estoqueAtual: 5,
-    saidas: [24, 20, 22, 28, 19, 21, 23, 25], // Média ~22.75/sem
+    saidas: [95, 102, 98], // Média ~98.3/mês (anteriormente ~22.75/sem)
     custo: 65.00,
     preco: 110.00,
     leadTimeDias: 5,
@@ -28,7 +28,7 @@ export const SKUS_AM_DADOS: SkuAmostra[] = [
     nome: "Sensor de Oxigênio Bosch Sonda Lambda",
     categoria: "Injeção",
     estoqueAtual: 1,
-    saidas: [5, 2, 8, 1, 9, 3, 2, 6], // Média ~4.5/sem. Instável (Z)
+    saidas: [18, 22, 20], // Média ~20.0/mês (anteriormente ~4.5/sem)
     custo: 145.00,
     preco: 290.00,
     leadTimeDias: 7,
@@ -38,8 +38,8 @@ export const SKUS_AM_DADOS: SkuAmostra[] = [
     sku: "AMOR-DI",
     nome: "Amortecedor Diant. Cofap GP32282",
     categoria: "Suspensão",
-    estoqueAtual: 85, // Capital imobilizado enorme!
-    saidas: [8, 9, 7, 8, 10, 9, 8, 9], // Média ~8.5/sem
+    estoqueAtual: 85,
+    saidas: [35, 40, 36], // Média ~37.0/mês (anteriormente ~8.5/sem)
     custo: 210.00,
     preco: 390.00,
     leadTimeDias: 12,
@@ -49,8 +49,8 @@ export const SKUS_AM_DADOS: SkuAmostra[] = [
     sku: "OL-MO",
     nome: "Óleo de Motor Castrol Edge 5W30 Sintético",
     categoria: "Lubrificantes",
-    estoqueAtual: 120, // Nível excelente, equilibrado
-    saidas: [65, 72, 58, 61, 70, 68, 64, 66], // Média ~65.5/sem
+    estoqueAtual: 120,
+    saidas: [275, 290, 285], // Média ~283.3/mês (anteriormente ~65.5/sem)
     custo: 32.00,
     preco: 58.00,
     leadTimeDias: 4,
@@ -61,7 +61,7 @@ export const SKUS_AM_DADOS: SkuAmostra[] = [
     nome: "Filtro de Ar Tecfil ARL1032",
     categoria: "Filtros",
     estoqueAtual: 45,
-    saidas: [18, 16, 17, 19, 15, 18, 17, 20], // Média ~17.5/sem
+    saidas: [72, 80, 75], // Média ~75.7/mês (anteriormente ~17.5/sem)
     custo: 18.00,
     preco: 35.00,
     leadTimeDias: 5,
@@ -72,7 +72,7 @@ export const SKUS_AM_DADOS: SkuAmostra[] = [
     nome: "Bomba d'Água Urba UB0621",
     categoria: "Arrefecimento",
     estoqueAtual: 6,
-    saidas: [11, 8, 14, 5, 12, 7, 10, 11], // Média ~9.75/sem
+    saidas: [40, 45, 41], // Média ~42.0/mês (anteriormente ~9.75/sem)
     custo: 115.00,
     preco: 210.00,
     leadTimeDias: 7,
@@ -83,7 +83,7 @@ export const SKUS_AM_DADOS: SkuAmostra[] = [
     nome: "Disco de Freio Diant. Fremax BD4412",
     categoria: "Freios",
     estoqueAtual: 8,
-    saidas: [15, 12, 17, 13, 14, 16, 12, 15], // Média ~14.0/sem
+    saidas: [58, 64, 60], // Média ~60.7/mês (anteriormente ~14.0/sem)
     custo: 90.00,
     preco: 175.00,
     leadTimeDias: 6,
@@ -94,7 +94,7 @@ export const SKUS_AM_DADOS: SkuAmostra[] = [
     nome: "Jogo de Vela de Ignição NGK BKR7E",
     categoria: "Ignição",
     estoqueAtual: 50,
-    saidas: [12, 10, 11, 13, 11, 12, 10, 11], // Média ~11.25/sem
+    saidas: [45, 52, 49], // Média ~48.7/mês (anteriormente ~11.25/sem)
     custo: 45.00,
     preco: 85.00,
     leadTimeDias: 5,
@@ -105,7 +105,7 @@ export const SKUS_AM_DADOS: SkuAmostra[] = [
     nome: "Bobina de Ignição Magneti Marelli BI0022",
     categoria: "Ignição",
     estoqueAtual: 4,
-    saidas: [4, 6, 3, 5, 4, 3, 5, 4], // Média ~4.25/sem. Estável
+    saidas: [16, 20, 18], // Média ~18.0/mês (anteriormente ~4.25/sem)
     custo: 135.00,
     preco: 250.00,
     leadTimeDias: 8,
@@ -116,7 +116,7 @@ export const SKUS_AM_DADOS: SkuAmostra[] = [
     nome: "Correia Dentada Gates 40859x19XS",
     categoria: "Transmissão",
     estoqueAtual: 22,
-    saidas: [10, 2, 15, 1, 12, 8, 3, 14], // Média ~8.1/sem. Super variável (Z)
+    saidas: [30, 42, 33], // Média ~35.0/mês (anteriormente ~8.1/sem)
     custo: 55.00,
     preco: 105.00,
     leadTimeDias: 9,
@@ -126,8 +126,8 @@ export const SKUS_AM_DADOS: SkuAmostra[] = [
     sku: "FIL-OL",
     nome: "Filtro de Óleo Tecfil PSL74",
     categoria: "Filtros",
-    estoqueAtual: 180, // Muita sobra!
-    saidas: [55, 62, 58, 60, 54, 57, 59, 61], // Média ~58.25/sem
+    estoqueAtual: 180,
+    saidas: [245, 260, 250], // Média ~251.7/mês (anteriormente ~58.25/sem)
     custo: 12.00,
     preco: 24.00,
     leadTimeDias: 5,
@@ -138,7 +138,7 @@ export const SKUS_AM_DADOS: SkuAmostra[] = [
     nome: "Rolamento de Roda Traseira SKF BAH-0062",
     categoria: "Rolamentos",
     estoqueAtual: 35,
-    saidas: [3, 2, 4, 1, 2, 5, 1, 3], // Média ~2.6/sem (Pouco giro estável, C-X)
+    saidas: [10, 12, 11], // Média ~11.0/mês (anteriormente ~2.6/sem)
     custo: 80.00,
     preco: 160.00,
     leadTimeDias: 10,
@@ -149,7 +149,7 @@ export const SKUS_AM_DADOS: SkuAmostra[] = [
     nome: "Bieleta Dianteira Cofap BTC01103",
     categoria: "Suspensão",
     estoqueAtual: 3,
-    saidas: [11, 14, 8, 12, 9, 15, 10, 11], // Média ~11.25/sem
+    saidas: [46, 52, 48], // Média ~48.7/mês (anteriormente ~11.25/sem)
     custo: 35.00,
     preco: 68.00,
     leadTimeDias: 6,
@@ -159,8 +159,8 @@ export const SKUS_AM_DADOS: SkuAmostra[] = [
     sku: "FIL-CO",
     nome: "Filtro de Combustível Fram G5857",
     categoria: "Filtros",
-    estoqueAtual: 200, // Alto estoque
-    saidas: [42, 38, 45, 41, 39, 40, 44, 41], // Média ~41.25/sem
+    estoqueAtual: 200,
+    saidas: [170, 185, 180], // Média ~178.3/mês (anteriormente ~41.25/sem)
     custo: 15.00,
     preco: 30.00,
     leadTimeDias: 4,
