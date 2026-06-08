@@ -90,7 +90,7 @@ export default function App() {
 
           {/* Intelligence applied by allla - enlarged and clean */}
           <div className="flex items-center gap-3.5 px-4 py-2.5 rounded-2xl bg-slate-950/40 border border-slate-800/40 select-none">
-            <span className="text-sm font-medium text-slate-400 tracking-tight font-mono">
+            <span className="text-sm font-medium text-brand-teal tracking-tight font-mono">
               Intelligence applied by
             </span>
             <img 
