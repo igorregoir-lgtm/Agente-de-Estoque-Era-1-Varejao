@@ -88,16 +88,26 @@ export default function App() {
             </button>
           </div>
 
-          {/* Quick Support / Contact Badge */}
-          <div>
-            <a
-              href="mailto:igor.rego.IR@gmail.com?subject=allla%20Consultoria%20Varejao"
-              className="py-1.5 px-3 rounded-lg bg-brand-navy/90 hover:bg-brand-navy-light/40 border border-slate-800 text-xs font-mono text-slate-300 flex items-center gap-1.5 transition-colors"
-            >
-              <Mail className="w-3.5 h-3.5 text-brand-teal" />
-              <span className="hidden sm:inline">igor.rego.IR@gmail.com</span>
-              <span className="inline sm:hidden">Contato</span>
-            </a>
+          {/* Quick Support / Contact Badge + Intelligence applied by */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-500 tracking-tight select-none">
+              <span>Intelligence applied by</span>
+              <img 
+                src="/logo_allla.jpeg" 
+                alt="allla logo" 
+                className="h-3.5 w-auto rounded opacity-80"
+              />
+            </div>
+            <div>
+              <a
+                href="mailto:igor.rego.IR@gmail.com?subject=allla%20Consultoria%20Varejao"
+                className="py-1.5 px-3 rounded-lg bg-brand-navy/90 hover:bg-brand-navy-light/40 border border-slate-800 text-xs font-mono text-slate-300 flex items-center gap-1.5 transition-colors"
+              >
+                <Mail className="w-3.5 h-3.5 text-brand-teal" />
+                <span className="hidden sm:inline">igor.rego.IR@gmail.com</span>
+                <span className="inline sm:hidden">Contato</span>
+              </a>
+            </div>
           </div>
         </div>
       </header>

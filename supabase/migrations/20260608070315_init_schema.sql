@@ -1,5 +1,4 @@
 -- Varejão Era 1 — Supabase Database Schema
--- Paste this into your Supabase SQL Editor to set up the tables.
 
 -- Table for contact leads
 CREATE TABLE IF NOT EXISTS leads_contato (
