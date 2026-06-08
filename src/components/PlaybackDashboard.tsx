@@ -25,16 +25,16 @@ export default function PlaybackDashboard({ onComplete, liveData }: PlaybackDash
   // Stage 4: Sugestão de Pedido da Semana (Lista cirúrgica)
   // Stage 5: Relatório Executivo por IA (Frase legível ao decisor)
   const STEPS = [
-    { id: 0, label: "Passo 0: Dados Crus do ERP", subtitle: "Estrutura nativa sem tratamento inteligente" },
-    { id: 1, label: "Bloco 1: Classificação ABC-XYZ", subtitle: "Identificação cirúrgica de recorrência" },
-    { id: 2, label: "Bloco 2: Custo de Oportunidade", subtitle: "Mapeamento financeiro em reais" },
-    { id: 3, label: "Bloco 3: Alertas de Ruptura", subtitle: "Sinalizadores de colapso físico" },
-    { id: 4, label: "Bloco 4: Lista de Reposição", subtitle: "Sugestão de compra calibrada" },
-    { id: 5, label: "Bloco 5: Relatório por IA", subtitle: "Decisão sem jargões técnicos" }
+    { id: 0, label: "Passo 0: Dados Crus do ERP", subtitle: "Estrutura nativa sem tratamento inteligente", mini: "Dados ERP" },
+    { id: 1, label: "Bloco 1: Classificação ABC-XYZ", subtitle: "Identificação cirúrgica de recorrência", mini: "Classificação" },
+    { id: 2, label: "Bloco 2: Custo de Oportunidade", subtitle: "Mapeamento financeiro em reais", mini: "Finanças" },
+    { id: 3, label: "Bloco 3: Alertas de Ruptura", subtitle: "Sinalizadores de colapso físico", mini: "Rupturas" },
+    { id: 4, label: "Bloco 4: Lista de Reposição", subtitle: "Sugestão de compra calibrada", mini: "Reposição" },
+    { id: 5, label: "Bloco 5: Relatório por IA", subtitle: "Decisão sem jargões técnicos", mini: "Relatório IA" }
   ];
 
-  const [currentStep, setCurrentStep] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [currentStep, setCurrentStep] = useState(liveData ? 1 : 0);
+  const [isPlaying, setIsPlaying] = useState(!liveData);
   const [playSpeed, setPlaySpeed] = useState<1 | 2>(1); // 1x or 2x speed
   const [progress, setProgress] = useState(0); // Progress percentage of actual step (0 to 100)
 
@@ -103,6 +103,12 @@ export default function PlaybackDashboard({ onComplete, liveData }: PlaybackDash
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    if (liveData) {
+      setIsPlaying(false);
+      setProgress(0);
+      return;
+    }
+
     if (isPlaying) {
       const stepDuration = baseDuration / playSpeed;
       const tickRate = 100; // Update progress every 100ms
@@ -131,7 +137,7 @@ export default function PlaybackDashboard({ onComplete, liveData }: PlaybackDash
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [isPlaying, playSpeed, currentStep]);
+  }, [isPlaying, playSpeed, currentStep, liveData]);
 
   const handleNextStep = () => {
     setProgress(0);
@@ -171,85 +177,115 @@ export default function PlaybackDashboard({ onComplete, liveData }: PlaybackDash
     return sum + (qtyVal * cost);
   }, 0);
 
+  const visibleSteps = liveData ? STEPS.filter((s) => s.id > 0) : STEPS;
+
   return (
     <div className="space-y-6 md:space-y-8">
       {/* Playback Control Top Bar */}
-      <div className="bg-brand-navy border border-slate-800/50 rounded-[2rem] p-5 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className={`bg-brand-navy border border-slate-800/50 rounded-[2rem] p-5 flex flex-col md:flex-row items-center ${liveData ? "justify-center" : "justify-between"} gap-4`}>
         {/* Progress steps indicators */}
-        <div className="flex items-center gap-1.5 w-full md:w-auto overflow-x-auto py-1 scrollbar-none">
-          {STEPS.map((step, idx) => (
-            <React.Fragment key={step.id}>
-              <button
-                onClick={() => {
-                  setCurrentStep(step.id);
-                  setProgress(0);
-                  setIsPlaying(idx < STEPS.length - 1);
-                }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all shrink-0 cursor-pointer ${
-                  currentStep === step.id
-                    ? "bg-brand-teal text-slate-950 font-semibold"
-                    : idx < currentStep
-                    ? "text-teal-400 bg-brand-teal/10 hover:bg-brand-teal/20"
-                    : "text-slate-400 bg-slate-800/50 hover:bg-slate-800"
-                }`}
-              >
-                {step.id} {step.id === 0 ? "ERP" : `B${step.id}`}
-              </button>
-              {idx < STEPS.length - 1 && (
-                <div className={`w-3 h-[2px] ${idx < currentStep ? "bg-teal-700" : "bg-slate-800"}`} />
-              )}
-            </React.Fragment>
-          ))}
+        <div className={`flex items-center gap-1.5 w-full ${liveData ? "justify-center" : "md:w-auto"} overflow-x-auto py-1 scrollbar-none`}>
+          {liveData ? (
+            visibleSteps.map((step, idx) => (
+              <React.Fragment key={step.id}>
+                <button
+                  onClick={() => {
+                    setCurrentStep(step.id);
+                    setProgress(0);
+                  }}
+                  className={`px-4 py-2 rounded-xl transition-all shrink-0 cursor-pointer text-left flex flex-col gap-0.5 ${
+                    currentStep === step.id
+                      ? "bg-brand-teal text-slate-950 font-semibold shadow-sm animate-pulse-glow"
+                      : "text-slate-400 bg-slate-800/50 hover:bg-slate-850 hover:text-slate-200"
+                  }`}
+                >
+                  <span className="font-mono text-[11px] font-bold">B{step.id}</span>
+                  <span className="text-[10px] font-sans font-medium tracking-tight whitespace-nowrap">{step.mini}</span>
+                </button>
+                {idx < visibleSteps.length - 1 && (
+                  <div className={`w-4 h-[2px] shrink-0 ${step.id < currentStep ? "bg-teal-700" : "bg-slate-800"}`} />
+                )}
+              </React.Fragment>
+            ))
+          ) : (
+            STEPS.map((step, idx) => (
+              <React.Fragment key={step.id}>
+                <button
+                  onClick={() => {
+                    setCurrentStep(step.id);
+                    setProgress(0);
+                    setIsPlaying(idx < STEPS.length - 1);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all shrink-0 cursor-pointer ${
+                    currentStep === step.id
+                      ? "bg-brand-teal text-slate-950 font-semibold"
+                      : idx < currentStep
+                      ? "text-teal-400 bg-brand-teal/10 hover:bg-brand-teal/20"
+                      : "text-slate-400 bg-slate-800/50 hover:bg-slate-800"
+                  }`}
+                >
+                  {step.id} {step.id === 0 ? "ERP" : `B${step.id}`}
+                </button>
+                {idx < STEPS.length - 1 && (
+                  <div className={`w-3 h-[2px] ${idx < currentStep ? "bg-teal-700" : "bg-slate-800"}`} />
+                )}
+              </React.Fragment>
+            ))
+          )}
         </div>
 
         {/* Playback actions block */}
-        <div className="flex items-center gap-3 w-full md:w-auto justify-end">
-          {/* Play/Pause */}
-          <button
-            onClick={() => setIsPlaying(!isPlaying)}
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition-colors cursor-pointer"
-            title={isPlaying ? "Pausar" : "Iniciar"}
-          >
-            {isPlaying ? <Pause className="w-4 h-4 fill-white" /> : <Play className="w-4 h-4 fill-white" />}
-          </button>
+        {!liveData && (
+          <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+            {/* Play/Pause */}
+            <button
+              onClick={() => setIsPlaying(!isPlaying)}
+              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition-colors cursor-pointer"
+              title={isPlaying ? "Pausar" : "Iniciar"}
+            >
+              {isPlaying ? <Pause className="w-4 h-4 fill-white" /> : <Play className="w-4 h-4 fill-white" />}
+            </button>
 
-          {/* Replay */}
-          <button
-            onClick={handleReplay}
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition-colors cursor-pointer"
-            title="Recomeçar do início"
-          >
-            <RotateCcw className="w-4 h-4" />
-          </button>
+            {/* Replay */}
+            <button
+              onClick={handleReplay}
+              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition-colors cursor-pointer"
+              title="Recomeçar do início"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
 
-          {/* Speed toggler */}
-          <button
-            onClick={() => setPlaySpeed(playSpeed === 1 ? 2 : 1)}
-            className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-mono text-white transition-colors flex items-center gap-1 cursor-pointer"
-            title="Velocidade de reprodução"
-          >
-            <FastForward className="w-3.5 h-3.5 text-brand-teal" />
-            <span>{playSpeed}x</span>
-          </button>
+            {/* Speed toggler */}
+            <button
+              onClick={() => setPlaySpeed(playSpeed === 1 ? 2 : 1)}
+              className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-mono text-white transition-colors flex items-center gap-1 cursor-pointer"
+              title="Velocidade de reprodução"
+            >
+              <FastForward className="w-3.5 h-3.5 text-brand-teal" />
+              <span>{playSpeed}x</span>
+            </button>
 
-          {/* Skip */}
-          <button
-            onClick={handleSkipToEnd}
-            className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 hover:text-white transition-all flex items-center gap-1 cursor-pointer"
-          >
-            <SkipForward className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Pular para o fim</span>
-          </button>
-        </div>
+            {/* Skip */}
+            <button
+              onClick={handleSkipToEnd}
+              className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 hover:text-white transition-all flex items-center gap-1 cursor-pointer"
+            >
+              <SkipForward className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Pular para o fim</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Progress slider bar representer */}
-      <div className="w-full bg-brand-navy-light/60 border border-slate-800/40 h-2.5 rounded-full overflow-hidden">
-        <div
-          className="bg-brand-teal h-full transition-all duration-100 ease-linear shadow-[0_0_10px_rgba(32,184,166,0.6)]"
-          style={{ width: `${currentStep === STEPS.length - 1 && !isPlaying ? 100 : progress}%` }}
-        />
-      </div>
+      {!liveData && (
+        <div className="w-full bg-brand-navy-light/60 border border-slate-800/40 h-2.5 rounded-full overflow-hidden">
+          <div
+            className="bg-brand-teal h-full transition-all duration-100 ease-linear shadow-[0_0_10px_rgba(32,184,166,0.6)]"
+            style={{ width: `${currentStep === STEPS.length - 1 && !isPlaying ? 100 : progress}%` }}
+          />
+        </div>
+      )}
 
       {/* Current Step Title and Banner */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-6 rounded-[2rem] bg-brand-navy border border-slate-800/50">
@@ -336,22 +372,34 @@ export default function PlaybackDashboard({ onComplete, liveData }: PlaybackDash
 
             {/* Quick action buttons */}
             <div className="pt-2 border-t border-slate-800">
-              {currentStep < STEPS.length - 1 ? (
-                <button
-                  onClick={handleNextStep}
-                  className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm text-white font-medium flex items-center justify-center gap-2 cursor-pointer transition-colors"
-                >
-                  <span>Avançar Passo</span>
-                  <ArrowRight className="w-4 h-4 text-brand-teal" />
-                </button>
+              {liveData ? (
+                currentStep === STEPS.length - 1 && (
+                  <button
+                    onClick={onComplete}
+                    className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-950 font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 cursor-pointer transition-opacity"
+                  >
+                    <Sparkles className="w-4 h-4 fill-slate-950" />
+                    <span>Ver Tese da Fase 1</span>
+                  </button>
+                )
               ) : (
-                <button
-                  onClick={onComplete}
-                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-950 font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 cursor-pointer transition-opacity"
-                >
-                  <Sparkles className="w-4 h-4 fill-slate-950" />
-                  <span>Ver Tese da Fase 1</span>
-                </button>
+                currentStep < STEPS.length - 1 ? (
+                  <button
+                    onClick={handleNextStep}
+                    className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm text-white font-medium flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                  >
+                    <span>Avançar Passo</span>
+                    <ArrowRight className="w-4 h-4 text-brand-teal" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={onComplete}
+                    className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-950 font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 cursor-pointer transition-opacity"
+                  >
+                    <Sparkles className="w-4 h-4 fill-slate-950" />
+                    <span>Ver Tese da Fase 1</span>
+                  </button>
+                )
               )}
             </div>
           </div>
