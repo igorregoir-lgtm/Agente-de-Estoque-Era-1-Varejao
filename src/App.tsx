@@ -4,12 +4,38 @@ import PlaybackDashboard from "./components/PlaybackDashboard";
 import TeseEstrategica from "./components/TeseEstrategica";
 import ModoVivoController from "./components/ModoVivoController";
 import { Sparkles, Library, Zap, ArrowLeft, RefreshCw, Mail } from "lucide-react";
-import { AnaliseSku, RelatorioExecutivo } from "./types";
+import { SkuAmostra, AnaliseSku, RelatorioExecutivo } from "./types";
 
 type AppStage = "welcome" | "playback" | "tese" | "live-playground";
 
 export default function App() {
   const [stage, setStage] = useState<AppStage>("welcome");
+
+  // State to hold and accumulate live data items so they persist across navigation
+  const [liveItems, setLiveItems] = useState<SkuAmostra[]>([
+    {
+      sku: "EMBR-DI",
+      nome: "Kit de Embreagem LUK 622307500",
+      categoria: "Transmissão",
+      estoqueAtual: 1,
+      saidas: [18, 16, 20],
+      custo: 350.00,
+      preco: 620.00,
+      leadTimeDias: 8,
+      moq: 5
+    },
+    {
+      sku: "CAB-VE",
+      nome: "Cabo de Vela NGK SC-T04",
+      categoria: "Ignição",
+      estoqueAtual: 50,
+      saidas: [35, 38, 36],
+      custo: 42.00,
+      preco: 85.00,
+      leadTimeDias: 4,
+      moq: 10
+    }
+  ]);
 
   // Custom data generated from the Live Playground
   const [customResult, setCustomResult] = useState<{
@@ -120,18 +146,19 @@ export default function App() {
                 <span>Voltar ao Onboarding</span>
               </button>
               {customResult ? (
-                <div className="flex items-center gap-2 text-xs font-mono">
-                  <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                    Rodando com Seus Dados Customizados
+                <div className="flex items-center gap-3 text-xs font-mono">
+                  <span className="px-2 py-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 font-semibold">
+                    Modo ao Vivo Ativo
                   </span>
                   <button
                     onClick={() => {
                       setCustomResult(null);
+                      setStage("live-playground");
                     }}
-                    className="text-[11px] text-teal-400 hover:underline flex items-center gap-0.5 cursor-pointer"
+                    className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold font-sans text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm shadow-amber-500/10"
                   >
-                    <RefreshCw className="w-2.5 h-2.5 animate-spin" />
-                    Resetar Semente
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Resetar & Inserir mais dados</span>
                   </button>
                 </div>
               ) : (
@@ -157,6 +184,8 @@ export default function App() {
 
         {stage === "live-playground" && (
           <ModoVivoController
+            items={liveItems}
+            setItems={setLiveItems}
             onBackToTese={() => setStage("tese")}
             onAnalysisResult={handleLiveAnalysisCompleted}
           />

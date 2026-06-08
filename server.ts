@@ -47,7 +47,9 @@ app.post("/api/genai-analise", async (req, res) => {
     const ai = getAiClient();
     
     const prompt = `
-      Você é o Agente de Estoque Era 1 do Varejão Autopeças. Sua missão é ler esta lista de peças de reposição de autopeças e gerar uma análise cirúrgica combinada de controle de estoque obedecendo ao protocolo de 6 passos (ABC-XYZ, custo de oportunidade, alertas de estoque e lista de pedidos).
+      Você é o Agente de Estoque Fase 1 do Varejão Autopeças. Sua missão é ler esta lista de peças de reposição de autopeças (que representa o lote de dados acumulados e atualizados pelo operador a cada carga) e gerar uma análise cirúrgica combinada de controle de estoque obedecendo ao protocolo de 6 passos (ABC-XYZ, custo de oportunidade, alertas de estoque e lista de pedidos).
+      
+      Importante: Use este lote acumulado para aprimorar, calibrar e refinar as recomendações de compras e as curvas de prioridade (ABC-XYZ) de forma consistente em relação a análises anteriores, acumulando o aprendizado sobre o comportamento de demanda de todo o lote.
       
       Lista de SKUs fornecida:
       ${JSON.stringify(skus, null, 2)}

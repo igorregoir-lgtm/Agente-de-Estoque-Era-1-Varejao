@@ -903,15 +903,7 @@ export default function PlaybackDashboard({ onComplete, liveData }: PlaybackDash
                   <p>{activeReport.notaAoComprador}</p>
                 </div>
 
-                <div className="flex gap-4 mt-4 justify-end">
-                  <button
-                    onClick={() => setShowLeadModal(true)}
-                    className="px-5 py-3 rounded-xl bg-brand-teal hover:bg-brand-teal/90 text-slate-950 font-bold text-xs transition-colors cursor-pointer flex items-center gap-1.5 font-sans"
-                  >
-                    <Mail className="w-3.5 h-3.5" />
-                    <span>Rodar com meus dados (Solicitar Demo)</span>
-                  </button>
-                </div>
+
               </div>
             )}
           </div>

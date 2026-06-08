@@ -4,36 +4,13 @@ import { Sparkles, Play, Plus, Trash2, ArrowLeft, Loader2, AlertCircle, RefreshC
 import { supabase } from "../utils/supabaseClient";
 
 interface ModoVivoControllerProps {
+  items: SkuAmostra[];
+  setItems: React.Dispatch<React.SetStateAction<SkuAmostra[]>>;
   onBackToTese: () => void;
   onAnalysisResult: (data: { analises: AnaliseSku[]; relatorio: RelatorioExecutivo }) => void;
 }
 
-export default function ModoVivoController({ onBackToTese, onAnalysisResult }: ModoVivoControllerProps) {
-  // Pre-populate with mock items representing typical inventory scenarios
-  const [items, setItems] = useState<SkuAmostra[]>([
-    {
-      sku: "EMBR-DI",
-      nome: "Kit de Embreagem LUK 622307500",
-      categoria: "Transmissão",
-      estoqueAtual: 1, // Becomes Critical!
-      saidas: [18, 16, 20], // Monthly demand averaging ~18
-      custo: 350.00,
-      preco: 620.00,
-      leadTimeDias: 8,
-      moq: 5
-    },
-    {
-      sku: "CAB-VE",
-      nome: "Cabo de Vela NGK SC-T04",
-      categoria: "Ignição",
-      estoqueAtual: 50, // Becomes Excess!
-      saidas: [35, 38, 36], // Monthly demand averaging ~36.3
-      custo: 42.00,
-      preco: 85.00,
-      leadTimeDias: 4,
-      moq: 10
-    }
-  ]);
+export default function ModoVivoController({ items, setItems, onBackToTese, onAnalysisResult }: ModoVivoControllerProps) {
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -57,6 +34,36 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
   const [dbLoading, setDbLoading] = useState(false);
   const [dbSuccessMessage, setDbSuccessMessage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+
+  const handleResetItems = () => {
+    if (window.confirm("Deseja mesmo resetar o lote de testes para os 2 itens iniciais?")) {
+      setItems([
+        {
+          sku: "EMBR-DI",
+          nome: "Kit de Embreagem LUK 622307500",
+          categoria: "Transmissão",
+          estoqueAtual: 1,
+          saidas: [18, 16, 20],
+          custo: 350.00,
+          preco: 620.00,
+          leadTimeDias: 8,
+          moq: 5
+        },
+        {
+          sku: "CAB-VE",
+          nome: "Cabo de Vela NGK SC-T04",
+          categoria: "Ignição",
+          estoqueAtual: 50,
+          saidas: [35, 38, 36],
+          custo: 42.00,
+          preco: 85.00,
+          leadTimeDias: 4,
+          moq: 10
+        }
+      ]);
+      setDbSuccessMessage("Lote de testes resetado para os itens iniciais.");
+    }
+  };
 
   const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
@@ -523,6 +530,15 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
           >
             {dbLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-teal" /> : <Check className="w-3.5 h-3.5 text-emerald-400" />}
             <span>Salvar no Banco</span>
+          </button>
+
+          <button
+            onClick={handleResetItems}
+            className="px-4 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-xs font-mono text-rose-400 border border-rose-500/20 flex items-center gap-2 cursor-pointer transition-colors"
+            title="Resetar lote de testes local para os itens iniciais"
+          >
+            <RefreshCw className="w-3.5 h-3.5 text-rose-500 animate-spin-slow" />
+            <span>Resetar Dados</span>
           </button>
         </div>
 
