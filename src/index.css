@@ -7,36 +7,52 @@
   --font-serif: "Fraunces", Georgia, serif;
   --font-mono: "JetBrains Mono", monospace;
 
-  --color-brand-navy: #080c14;
-  --color-brand-navy-light: #121826;
-  --color-brand-navy-dark: #03050a;
-  --color-brand-teal: #20b8a6;
+  /* Official allla.ai 13-Token Color System */
+  --color-primary: #1E3A5F;
+  --color-primary-deep: #14283D;
+  --color-ink: #0E1F30;
+  --color-ink-soft: #2D4663;
+  --color-paper: #FAFAFA;
+  --color-paper-soft: #F4F6F8;
+  --color-cloud: #E5EBF1;
+  --color-steel: #5B7691;
+  --color-steel-soft: #8A9AAB;
+  --color-rule: #D8DDE3;
+  --color-rule-soft: #E8ECF0;
+  --color-accent: #14B8A6;
+  --color-accent-deep: #0F9486;
+
+  /* Mappings for legacy theme classes */
+  --color-brand-navy: #1E3A5F;
+  --color-brand-navy-light: #F4F6F8;
+  --color-brand-navy-dark: #FAFAFA;
+  --color-brand-teal: #14B8A6;
   --color-brand-coral: #ef4444;
   --color-brand-gold: #f59e0b;
 }
 
 @layer base {
   body {
-    background-color: #03050a;
-    color: #e2e8f0;
+    background-color: var(--color-paper);
+    color: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Custom scrollbar */
+  /* Custom scrollbar matching light paper theme */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: #050505;
+    background: var(--color-paper-soft);
   }
   ::-webkit-scrollbar-thumb {
-    background: #1a1a1a;
+    background: var(--color-rule);
     border-radius: 999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #2a2a2a;
+    background: var(--color-steel-soft);
   }
 }
 
@@ -50,27 +66,233 @@
   animation: pulseGlow 2s infinite;
 }
 
-/* Elegant Bento card patterns */
-.bento-card {
-  background-color: #0c0c0c;
-  border: 1px solid #1a1a1a;
+/* Redefine Bento cards to match the light-themed technical paper system */
+.bento-card, .bento-card-dark, .bento-card-light {
+  background-color: #ffffff !important;
+  border: 1px solid var(--color-rule) !important;
   border-radius: 2rem;
+  box-shadow: 0 4px 20px -2px rgba(14, 31, 48, 0.03), 0 2px 6px -1px rgba(14, 31, 48, 0.02);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--color-ink) !important;
 }
 
-.bento-card-dark {
-  background-color: #050505;
-  border: 1px solid #141414;
-  border-radius: 2rem;
-}
-
-.bento-card-light {
-  background-color: #111111;
-  border: 1px solid #222222;
-  border-radius: 2rem;
+.bento-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -4px rgba(14, 31, 48, 0.06), 0 4px 12px -2px rgba(14, 31, 48, 0.04);
 }
 
 .bento-border {
-  border-color: #1a1a1a;
+  border-color: var(--color-rule-soft) !important;
 }
 
+/* Global design adjustments for text contrast on light paper background */
+.text-white {
+  color: var(--color-ink) !important;
+}
+.text-\[\#e2e8f0\] {
+  color: var(--color-ink) !important;
+}
+.text-slate-100 {
+  color: var(--color-ink) !important;
+}
+.text-slate-200 {
+  color: var(--color-ink) !important;
+}
+.text-slate-350 {
+  color: var(--color-ink-soft) !important;
+}
+.text-slate-300 {
+  color: var(--color-ink-soft) !important;
+}
+.text-slate-400 {
+  color: var(--color-steel) !important;
+}
+.text-slate-405 {
+  color: var(--color-steel) !important;
+}
+.text-slate-500 {
+  color: var(--color-steel-soft) !important;
+}
+.text-slate-605 {
+  color: var(--color-steel-soft) !important;
+}
+.text-slate-600 {
+  color: var(--color-steel-soft) !important;
+}
+.text-slate-450 {
+  color: var(--color-steel) !important;
+}
+.text-slate-205 {
+  color: var(--color-ink-soft) !important;
+}
+
+/* Background mappings to light theme */
+.bg-brand-navy {
+  background-color: #ffffff !important;
+  border: 1px solid var(--color-rule-soft) !important;
+}
+.bg-brand-navy-dark {
+  background-color: var(--color-paper) !important;
+}
+.bg-brand-navy-light {
+  background-color: var(--color-paper-soft) !important;
+  border: 1px solid var(--color-rule-soft) !important;
+}
+.bg-slate-900 {
+  background-color: var(--color-cloud) !important;
+  color: var(--color-ink) !important;
+}
+.bg-slate-950 {
+  background-color: var(--color-paper-soft) !important;
+  border: 1px solid var(--color-rule-soft) !important;
+}
+.bg-slate-950\/50 {
+  background-color: var(--color-paper-soft) !important;
+}
+.bg-\[\#04060b\], .bg-\#04060b {
+  background-color: var(--color-paper-soft) !important;
+}
+.bg-\[\#0c0c0c\], .bg-\[\#030303\], .bg-\[\#111111\] {
+  background-color: #ffffff !important;
+  border-color: var(--color-rule) !important;
+}
+
+/* Borders */
+.border-slate-800, .border-slate-800\/50, .border-slate-800\/40, .border-slate-850\/60, .border-slate-900, .border-slate-800\/85, .border-\[\#1a1a1a\], .border-rose-950\/50 {
+  border-color: var(--color-rule-soft) !important;
+}
+
+/* Special treatments for UI elements to preserve contrast */
+header, header * {
+  /* Keep header dark navy for structural brand framing (Manifesto surface style) */
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+header {
+  background-color: var(--color-primary-deep) !important;
+  border-bottom: 1px solid var(--color-primary) !important;
+}
+header .text-slate-500, header .text-slate-450 {
+  color: var(--color-steel-soft) !important;
+}
+header span.text-brand-teal {
+  color: var(--color-accent) !important;
+}
+
+/* Footers: clean, subtle, light */
+footer {
+  background-color: var(--color-paper-soft) !important;
+  border-top: 1px solid var(--color-rule-soft) !important;
+  color: var(--color-steel) !important;
+}
+footer * {
+  color: inherit !important;
+}
+footer a:hover {
+  color: var(--color-primary) !important;
+}
+
+/* CTAs and buttons: preserve brand color hierarchy */
+.bg-gradient-to-r.from-teal-500.to-emerald-500 {
+  /* Accent buttons: Jade color */
+  background: var(--color-accent) !important;
+  color: #ffffff !important;
+}
+.bg-gradient-to-r.from-teal-500.to-emerald-500 span, .bg-gradient-to-r.from-teal-500.to-emerald-500 svg {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+}
+.bg-slate-800 {
+  background-color: var(--color-cloud) !important;
+  color: var(--color-primary-deep) !important;
+  border: 1px solid var(--color-rule) !important;
+}
+.bg-slate-800:hover {
+  background-color: var(--color-rule-soft) !important;
+}
+.text-brand-teal {
+  color: var(--color-primary) !important;
+}
+.text-yellow-450 {
+  color: var(--color-primary-deep) !important;
+}
+.text-teal-400 {
+  color: var(--color-primary) !important;
+}
+.text-rose-400 {
+  color: #b91c1c !important; /* Proper dark red for alerts in light theme */
+}
+.bg-rose-500\/10 {
+  background-color: #fee2e2 !important;
+}
+.text-rose-450 {
+  color: #b91c1c !important;
+}
+.bg-rose-950\/15 {
+  background-color: #fee2e2 !important;
+}
+.bg-rose-950\/10 {
+  background-color: #fee2e2 !important;
+}
+.text-rose-200 {
+  color: #991b1b !important;
+}
+.text-rose-300 {
+  color: #991b1b !important;
+}
+.bg-brand-teal\/10 {
+  background-color: var(--color-cloud) !important;
+}
+.text-teal-300 {
+  color: var(--color-primary) !important;
+}
+.text-yellow-305 {
+  color: var(--color-primary) !important;
+}
+
+/* Input fields inside tables */
+input[type="number"] {
+  background-color: #ffffff !important;
+  border: 1px solid var(--color-rule) !important;
+  color: var(--color-ink) !important;
+}
+
+/* Timeline navigation items */
+.text-teal-400.bg-brand-teal\/10 {
+  background-color: var(--color-cloud) !important;
+  color: var(--color-primary) !important;
+}
+
+/* Titles font weights and colors */
+h1, h2, h3, h4 {
+  color: var(--color-primary) !important;
+}
+
+/* SVGs and charts */
+.stroke-brand-teal {
+  stroke: var(--color-accent) !important;
+}
+
+/* Custom modal styling */
+.fixed.inset-0.z-\[100\] {
+  background-color: rgba(14, 31, 48, 0.4) !important;
+}
+.fixed.inset-0.z-\[100\] .bg-brand-navy {
+  background-color: #ffffff !important;
+  border: 1px solid var(--color-rule) !important;
+  color: var(--color-ink) !important;
+}
+.fixed.inset-0.z-\[100\] input {
+  background-color: #ffffff !important;
+  border: 1px solid var(--color-rule) !important;
+  color: var(--color-ink) !important;
+}
+.fixed.inset-0.z-\[100\] h3 {
+  color: var(--color-primary) !important;
+}
+.fixed.inset-0.z-\[100\] button {
+  color: #ffffff !important;
+}
+.fixed.inset-0.z-\[100\] button.absolute {
+  color: var(--color-steel) !important;
+}
