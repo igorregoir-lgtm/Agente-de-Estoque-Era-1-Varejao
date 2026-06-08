@@ -117,6 +117,19 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
     setItems(updated);
   };
 
+  const handleUpdateLeadTime = (idx: number, lt: number) => {
+    const updated = [...items];
+    updated[idx].leadTimeDias = Math.max(1, lt);
+    setItems(updated);
+  };
+
+  const handleUpdateMoq = (idx: number, moqVal: number) => {
+    const updated = [...items];
+    updated[idx].moq = Math.max(1, moqVal);
+    setItems(updated);
+  };
+
+
   const handleLoadFromDb = async () => {
     setDbLoading(true);
     setErrorMessage(null);
@@ -540,9 +553,11 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
               <tr className="bg-brand-navy-light text-slate-400 border-b border-slate-800/40 font-mono text-[10px]">
                 <th className="p-3">SKU</th>
                 <th className="p-3">Peça de Reposição</th>
-                <th className="p-3 text-center w-24">Estoque Atual</th>
-                <th className="p-3 text-center w-28">Custo Unitário</th>
-                <th className="p-3 text-center w-28">Preço de Venda</th>
+                <th className="p-3 text-center w-20">Estoque</th>
+                <th className="p-3 text-center w-24">Custo Unit.</th>
+                <th className="p-3 text-center w-24">Preço Venda</th>
+                <th className="p-3 text-center w-20">Lead Time</th>
+                <th className="p-3 text-center w-20">MOQ</th>
                 <th className="p-3 text-center w-36 font-semibold">Vendas Mensais Recentes</th>
                 <th className="p-3 text-right">Ação</th>
               </tr>
@@ -551,36 +566,52 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
               {items.map((item, idx) => (
                 <tr key={idx} className="hover:bg-slate-800/20">
                   <td className="p-3 text-brand-teal font-semibold font-mono text-sm">{item.sku}</td>
-                  <td className="p-3 font-sans truncate max-w-[160px] text-slate-200">{item.nome}</td>
+                  <td className="p-3 font-sans truncate max-w-[150px] text-slate-200">{item.nome}</td>
                   <td className="p-3 text-center">
                     <input
                       type="number"
                       value={item.estoqueAtual}
                       onChange={(e) => handleUpdateStock(idx, Number(e.target.value))}
-                      className="w-16 px-1.5 py-1 bg-brand-navy-dark border border-slate-800 rounded text-center text-brand-teal font-bold font-mono focus:outline-none focus:border-brand-teal/60"
+                      className="w-14 px-1.5 py-1 bg-brand-navy-dark border border-slate-800 rounded text-center text-brand-teal font-bold font-mono focus:outline-none focus:border-brand-teal/60"
                     />
                   </td>
                   <td className="p-3 text-center">
                     <div className="flex items-center justify-center gap-1 font-mono">
-                      <span className="text-[10px] text-slate-500">R$</span>
+                      <span className="text-[10px] text-slate-500 font-bold">R$</span>
                       <input
                         type="number"
                         value={item.custo}
                         onChange={(e) => handleUpdateCusto(idx, Number(e.target.value))}
-                        className="w-20 px-1.5 py-1 bg-brand-navy-dark border border-slate-800 rounded text-center text-slate-205 focus:outline-none focus:border-brand-teal/60"
+                        className="w-18 px-1.5 py-1 bg-brand-navy-dark border border-slate-800 rounded text-center text-slate-205 focus:outline-none focus:border-brand-teal/60"
                       />
                     </div>
                   </td>
                   <td className="p-3 text-center">
                     <div className="flex items-center justify-center gap-1 font-mono">
-                      <span className="text-[10px] text-slate-500">R$</span>
+                      <span className="text-[10px] text-slate-500 font-bold">R$</span>
                       <input
                         type="number"
                         value={item.preco}
                         onChange={(e) => handleUpdatePreco(idx, Number(e.target.value))}
-                        className="w-20 px-1.5 py-1 bg-brand-navy-dark border border-slate-800 rounded text-center text-slate-205 focus:outline-none focus:border-brand-teal/60"
+                        className="w-18 px-1.5 py-1 bg-brand-navy-dark border border-slate-800 rounded text-center text-slate-205 focus:outline-none focus:border-brand-teal/60"
                       />
                     </div>
+                  </td>
+                  <td className="p-3 text-center">
+                    <input
+                      type="number"
+                      value={item.leadTimeDias}
+                      onChange={(e) => handleUpdateLeadTime(idx, Number(e.target.value))}
+                      className="w-14 px-1.5 py-1 bg-brand-navy-dark border border-slate-800 rounded text-center text-slate-205 font-mono focus:outline-none focus:border-brand-teal/60"
+                    />
+                  </td>
+                  <td className="p-3 text-center">
+                    <input
+                      type="number"
+                      value={item.moq}
+                      onChange={(e) => handleUpdateMoq(idx, Number(e.target.value))}
+                      className="w-14 px-1.5 py-1 bg-brand-navy-dark border border-slate-800 rounded text-center text-slate-205 font-mono focus:outline-none focus:border-brand-teal/60"
+                    />
                   </td>
                   <td className="p-3 text-center">
                     <input
