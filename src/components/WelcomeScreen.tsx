@@ -48,9 +48,15 @@ export default function WelcomeScreen({ onStart }: WelcomeScreenProps) {
           <br className="hidden md:inline" /> decisões de compra explicadas em <span className="text-brand-teal">90 segundos</span>.
         </h1>
 
-        <p className="max-w-xl mx-auto text-sm md:text-base text-slate-300 font-sans leading-relaxed">
-          Descubra como o Agente Inteligente da Fase 1 apoia as decisões de compra no Varejão Autopeças. Veja como explicações simples e diagnósticos claros ajudam a equilibrar o estoque no dia a dia, eliminando o capital parado em excesso de amortecedores e prevenindo a falta de itens essenciais como cabos e velas.
-        </p>
+        <div className="max-w-2xl mx-auto space-y-4">
+          <p className="text-lg md:text-xl font-display font-semibold text-slate-900 leading-relaxed">
+            Descubra como o <span className="text-teal-600 font-bold">Agente Inteligente da Fase 1</span> apoia as decisões de compra no Varejão Autopeças.
+          </p>
+          <div className="w-12 h-0.5 bg-teal-500/30 mx-auto rounded-full" />
+          <p className="text-sm md:text-base text-slate-700 font-sans leading-relaxed max-w-lg mx-auto">
+            Veja como <span className="font-semibold text-teal-700">diagnósticos claros</span> ajudam a equilibrar o estoque no dia a dia e eliminam o capital parado.
+          </p>
+        </div>
 
         {/* Interactive load indicator / countdown box */}
         <div className="max-w-md mx-auto p-5 rounded-2xl bg-white/70 border border-slate-200/80 shadow-[0_8px_30px_rgba(0,0,0,0.04)] backdrop-blur-md space-y-3.5">
