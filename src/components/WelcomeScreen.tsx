@@ -6,7 +6,7 @@ interface WelcomeScreenProps {
 }
 
 export default function WelcomeScreen({ onStart }: WelcomeScreenProps) {
-  const [countdown, setCountdown] = useState(12);
+  const [countdown, setCountdown] = useState(30);
   const [autoStarted, setAutoStarted] = useState(false);
 
   useEffect(() => {
@@ -37,9 +37,9 @@ export default function WelcomeScreen({ onStart }: WelcomeScreenProps) {
       <div className="max-w-3xl w-full text-center z-10 space-y-8">
         
         {/* allla branding & Badge */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/60 border border-slate-800 backdrop-blur-md">
-          <Sparkles className="w-3.5 h-3.5 text-brand-teal animate-pulse" />
-          <span className="font-mono text-xs uppercase tracking-widest text-emerald-400">allla.ai · Fase 1 · Inteligência</span>
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-50/60 border border-teal-100/80 backdrop-blur-md shadow-sm">
+          <Sparkles className="w-3.5 h-3.5 text-teal-600 animate-pulse" />
+          <span className="font-mono text-xs uppercase tracking-widest text-teal-800 font-semibold">allla.ai · Fase 1 · Inteligência</span>
         </div>
 
         {/* Strategic Hook (0.1 Tese) */}
@@ -53,25 +53,25 @@ export default function WelcomeScreen({ onStart }: WelcomeScreenProps) {
         </p>
 
         {/* Interactive load indicator / countdown box */}
-        <div className="max-w-md mx-auto p-5 rounded-2xl bg-slate-900/40 border border-slate-800 backdrop-blur-md space-y-3.5">
-          <div className="flex items-center justify-between text-xs font-mono text-slate-400">
-            <span className="flex items-center gap-1.5 font-medium">
-              <Database className="w-4 h-4 text-brand-teal" />
+        <div className="max-w-md mx-auto p-5 rounded-2xl bg-white/70 border border-slate-200/80 shadow-[0_8px_30px_rgba(0,0,0,0.04)] backdrop-blur-md space-y-3.5">
+          <div className="flex items-center justify-between text-xs font-mono">
+            <span className="flex items-center gap-1.5 font-medium text-slate-700">
+              <Database className="w-4 h-4 text-teal-600 animate-pulse" />
               Semente de Simulação Determinística
             </span>
             <span className="text-slate-500">15 SKUs de Autopeças</span>
           </div>
-          <div className="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden border border-slate-900/50">
+          <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden border border-slate-200/50">
             <div 
-              className="bg-brand-teal h-full transition-all duration-1000 ease-linear shadow-[0_0_8px_rgba(20,184,166,0.5)] animate-pulse" 
-              style={{ width: `${(countdown / 12) * 100}%` }} 
+              className="bg-gradient-to-r from-teal-500 to-emerald-500 h-full transition-all duration-1000 ease-linear shadow-[0_0_8px_rgba(20,184,166,0.3)] animate-pulse" 
+              style={{ width: `${(countdown / 30) * 100}%` }} 
             />
           </div>
-          <div className="text-[11px] text-slate-400 font-mono">
+          <div className="text-[11px] text-slate-500 font-mono">
             {countdown > 0 ? (
-              <span>Iniciando simulação automaticamente em <span className="text-brand-teal font-bold">{countdown} segundos</span> ou clique abaixo...</span>
+              <span>Iniciando simulação automaticamente em <span className="text-teal-600 font-bold">{countdown} segundos</span> ou clique abaixo...</span>
             ) : (
-              <span className="text-emerald-400 font-semibold animate-pulse">Lançando o Agente Operador...</span>
+              <span className="text-teal-600 font-semibold animate-pulse">Lançando o Agente Operador...</span>
             )}
           </div>
         </div>
