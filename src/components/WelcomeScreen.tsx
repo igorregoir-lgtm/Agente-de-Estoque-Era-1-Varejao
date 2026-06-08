@@ -49,7 +49,7 @@ export default function WelcomeScreen({ onStart }: WelcomeScreenProps) {
         </h1>
 
         <p className="max-w-xl mx-auto text-sm md:text-base text-slate-300 font-sans leading-relaxed">
-          Prove a inteligência de suprimentos da Fase 1 para o Varejão Autopeças. Veja como algoritmos e modelos explicativos eliminam a estocagem ociosa de amortecedores e evitam a falta crítica de cabos e velas.
+          Descubra como o Agente Inteligente da Fase 1 apoia as decisões de compra no Varejão Autopeças. Veja como explicações simples e diagnósticos claros ajudam a equilibrar o estoque no dia a dia, eliminando o capital parado em excesso de amortecedores e prevenindo a falta de itens essenciais como cabos e velas.
         </p>
 
         {/* Interactive load indicator / countdown box */}
