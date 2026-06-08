@@ -8,6 +8,9 @@ export interface SkuAmostra {
   preco: number;
   leadTimeDias: number;
   moq: number;
+  nivelServicoAlvo?: number;
+  custoArmazenagemPercentual?: number;
+  desvioPrazoEntrega?: number;
 }
 
 export interface AnaliseSku {

@@ -60,6 +60,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       - preco: preço unitário de venda ao consumidor (número decimal). Se não for mencionado, assuma custo * 1.8.
       - leadTimeDias: tempo de entrega do fornecedor em dias úteis (inteiro). Se não for mencionado, assuma 5.
       - moq: lote mínimo de compra ou quantidade mínima de pedido (inteiro). Se não for mencionado, assuma 10.
+      - nivelServicoAlvo: nível de serviço alvo desejado em porcentagem (Ex: 95 ou 98). Se não for mencionado ou não estiver visível no documento, assuma nulo (null).
+      - custoArmazenagemPercentual: custo anual de carregamento/armazenagem do estoque em porcentagem (Ex: 25 ou 30). Se não for mencionado ou não estiver visível, assuma nulo (null).
+      - desvioPrazoEntrega: desvio padrão ou variabilidade do prazo de entrega do fornecedor em dias (Ex: 1.5 ou 2.0). Se não for mencionado ou não estiver visível, assuma nulo (null).
 
       Retorne APENAS um JSON válido contendo uma única chave "skus" que aponta para o array de objetos extraídos, conforme exemplo:
       {
@@ -73,7 +76,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             "custo": 45.00,
             "preco": 85.00,
             "leadTimeDias": 5,
-            "moq": 10
+            "moq": 10,
+            "nivelServicoAlvo": 95,
+            "custoArmazenagemPercentual": 25,
+            "desvioPrazoEntrega": 1.5
           }
         ]
       }

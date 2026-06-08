@@ -49,6 +49,9 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
   const [newLeadTime, setNewLeadTime] = useState<number>(5);
   const [newMoq, setNewMoq] = useState<number>(10);
   const [newSaidas, setNewSaidas] = useState("15, 12, 18"); // Comma-separated monthly values
+  const [newNivelServico, setNewNivelServico] = useState("");
+  const [newCustoArmazenagem, setNewCustoArmazenagem] = useState("");
+  const [newDesvioPrazo, setNewDesvioPrazo] = useState("");
 
   // DB Sync and Upload State
   const [dbLoading, setDbLoading] = useState(false);
@@ -73,7 +76,10 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
       custo: Number(newCusto),
       preco: Number(newPreco),
       leadTimeDias: Number(newLeadTime),
-      moq: Number(newMoq)
+      moq: Number(newMoq),
+      nivelServicoAlvo: newNivelServico.trim() === "" ? undefined : Number(newNivelServico),
+      custoArmazenagemPercentual: newCustoArmazenagem.trim() === "" ? undefined : Number(newCustoArmazenagem),
+      desvioPrazoEntrega: newDesvioPrazo.trim() === "" ? undefined : Number(newDesvioPrazo)
     };
 
     setItems([...items, newItem]);
@@ -86,6 +92,9 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
     setNewLeadTime(5);
     setNewMoq(10);
     setNewSaidas("15, 12, 18");
+    setNewNivelServico("");
+    setNewCustoArmazenagem("");
+    setNewDesvioPrazo("");
   };
 
   const handleDeleteItem = (idx: number) => {
@@ -149,7 +158,10 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
           custo: Number(d.custo ?? 0),
           preco: Number(d.preco ?? 0),
           leadTimeDias: Number(d.leadTimeDias ?? 5),
-          moq: Number(d.moq ?? 1)
+          moq: Number(d.moq ?? 1),
+          nivelServicoAlvo: d.nivelServicoAlvo !== null && d.nivelServicoAlvo !== undefined ? Number(d.nivelServicoAlvo) : undefined,
+          custoArmazenagemPercentual: d.custoArmazenagemPercentual !== null && d.custoArmazenagemPercentual !== undefined ? Number(d.custoArmazenagemPercentual) : undefined,
+          desvioPrazoEntrega: d.desvioPrazoEntrega !== null && d.desvioPrazoEntrega !== undefined ? Number(d.desvioPrazoEntrega) : undefined
         }));
         setItems(mappedItems);
         setDbSuccessMessage(`Sucesso! ${mappedItems.length} SKUs carregados do Supabase.`);
@@ -173,8 +185,18 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
         .from("skus_amostra")
         .upsert(items, { onConflict: "sku" });
 
-      if (error) throw error;
-      setDbSuccessMessage(`Sucesso! ${items.length} SKUs sincronizados e salvos no Supabase.`);
+      if (error) {
+        console.warn("DB Upsert failed, retrying with stripped fields...", error);
+        // Stripped fallback: remove parameters not present in basic schema
+        const strippedItems = items.map(({ nivelServicoAlvo, custoArmazenagemPercentual, desvioPrazoEntrega, ...rest }) => rest);
+        const { error: retryError } = await supabase
+          .from("skus_amostra")
+          .upsert(strippedItems, { onConflict: "sku" });
+        if (retryError) throw retryError;
+        setDbSuccessMessage(`Sucesso! ${items.length} SKUs salvos (apenas campos básicos, pois as novas colunas não existem no banco).`);
+      } else {
+        setDbSuccessMessage(`Sucesso! ${items.length} SKUs sincronizados e salvos no Supabase.`);
+      }
     } catch (err: any) {
       console.error(err);
       setErrorMessage("Erro ao salvar dados no Supabase: " + err.message);
@@ -227,7 +249,10 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
               custo: Number(s.custo ?? 50.00),
               preco: Number(s.preco ?? 95.00),
               leadTimeDias: Number(s.leadTimeDias ?? 5),
-              moq: Number(s.moq ?? 10)
+              moq: Number(s.moq ?? 10),
+              nivelServicoAlvo: s.nivelServicoAlvo !== null && s.nivelServicoAlvo !== undefined ? Number(s.nivelServicoAlvo) : undefined,
+              custoArmazenagemPercentual: s.custoArmazenagemPercentual !== null && s.custoArmazenagemPercentual !== undefined ? Number(s.custoArmazenagemPercentual) : undefined,
+              desvioPrazoEntrega: s.desvioPrazoEntrega !== null && s.desvioPrazoEntrega !== undefined ? Number(s.desvioPrazoEntrega) : undefined
             }));
 
             setItems((prev) => {
@@ -319,8 +344,35 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
           // Convert to daily standard deviation
           const devDaily = devMonthly / Math.sqrt(30);
 
-          // Safety Stock (Z = 1.65)
-          const safetyStock = Math.ceil(1.65 * devDaily * Math.sqrt(item.leadTimeDias));
+          // Fator Z based on target service level
+          let Z = 1.65; // Default is 95%
+          if (item.nivelServicoAlvo !== undefined && item.nivelServicoAlvo !== null) {
+            const sl = item.nivelServicoAlvo;
+            if (sl <= 80) Z = 0.84;
+            else if (sl <= 85) Z = 1.04;
+            else if (sl <= 90) Z = 1.28;
+            else if (sl <= 95) Z = 1.65;
+            else if (sl <= 97) Z = 1.88;
+            else if (sl <= 98) Z = 2.05;
+            else if (sl <= 99) Z = 2.33;
+            else Z = 2.58;
+          }
+
+          // Safety Stock calculation
+          let safetyStock = 0;
+          const sigma_d = devDaily;
+          const D_d = avgDailyDemand;
+          if (item.desvioPrazoEntrega !== undefined && item.desvioPrazoEntrega !== null && item.desvioPrazoEntrega > 0) {
+            // Formula including lead time variability: SS = Z * sqrt(LT * sigma_d^2 + D_d^2 * sigma_LT^2)
+            const sigma_LT = item.desvioPrazoEntrega;
+            const term1 = item.leadTimeDias * Math.pow(sigma_d, 2);
+            const term2 = Math.pow(D_d, 2) * Math.pow(sigma_LT, 2);
+            safetyStock = Math.ceil(Z * Math.sqrt(term1 + term2));
+          } else {
+            // Formula with deterministic lead time: SS = Z * sigma_d * sqrt(LT)
+            safetyStock = Math.ceil(Z * sigma_d * Math.sqrt(item.leadTimeDias));
+          }
+
           // Reorder Point
           const reorderPoint = Math.ceil((avgDailyDemand * item.leadTimeDias) + safetyStock);
           // Days until stockout
@@ -344,10 +396,10 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
             // Round to nearest higher multiple of MOQ
             suggestedQty = Math.max(item.moq, Math.ceil(deficit / item.moq) * item.moq);
             prioridade = alertLevel === "Crítico" ? "Máxima" : "Alta";
-            justificacao = `Estoque de segurança comprometido (${item.estoqueAtual} un) frente a uma demanda média mensal de ${avgMonthlyDemand.toFixed(0)} un. Gatilho de reabastecimento acionado (Ponto de Reposição ótimo de ${reorderPoint} un). Sugerido pedido de compra de ${suggestedQty} un respeitando o MOQ (${item.moq} un).`;
+            justificacao = `Estoque de segurança comprometido (${item.estoqueAtual} un) frente a uma demanda média mensal de ${avgMonthlyDemand.toFixed(0)} un. Gatilho de reabastecimento acionado (Ponto de Reposição ótimo de ${reorderPoint} un). Sugerido pedido de compra de ${suggestedQty} un respeitando o Lote Mínimo (${item.moq} un).`;
           } else {
             prioridade = "Baixa";
-            justificacao = `Estoque equilibrado em ${item.estoqueAtual} un. O saldo atual cobre confortavelmente o Lead Time de ${item.leadTimeDias} dias e o estoque de segurança. Sem necessidade de reposição no momento.`;
+            justificacao = `Estoque equilibrado em ${item.estoqueAtual} un. O saldo atual cobre confortavelmente o Tempo de Entrega de ${item.leadTimeDias} dias e o estoque de segurança. Sem necessidade de reposição no momento.`;
           }
 
           // Excess capital: value of stock exceeding target maximum (ROP + avgMonthlyDemand)
@@ -364,6 +416,12 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
           const riskDeficit = leadTimeDemand - item.estoqueAtual;
           const recEmRisco = alertLevel === "Crítico" && riskDeficit > 0 ? riskDeficit * item.preco : 0;
 
+          // Carrying cost calculation
+          const carryingRate = item.custoArmazenagemPercentual !== undefined && item.custoArmazenagemPercentual !== null
+            ? (item.custoArmazenagemPercentual / 100)
+            : 0.26; // Default to 26% annual
+          const custoManutencaoSemana = Math.max(0, (capImobilizado * carryingRate) / 52);
+
           return {
             sku: item.sku,
             nome: item.nome,
@@ -375,7 +433,7 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
             cluster: alertLevel === "Crítico" ? `${(item.preco * avgWeeklyDemand) > 500 ? "AX" : "BX"} (Giro Alto Crítico)` : isExcess ? "CY (Excesso Parado)" : "BY (Consumo Médio)",
             prioridadeGestao: prioridade,
             capitalImobilizado: Math.max(0, capImobilizado),
-            custoManutencaoSemana: Math.max(0, capImobilizado * 0.005),
+            custoManutencaoSemana: custoManutencaoSemana,
             custoRupturaEstimado: Math.max(0, recEmRisco * 0.5),
             indicePrioridade: alertLevel === "Crítico" ? 90 : alertLevel === "Atenção" ? 60 : 10,
             estoqueSeguranca: safetyStock,
@@ -535,6 +593,88 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
         </div>
       )}
 
+      {/* DICIONÁRIO DE CONCEITOS LOGÍSTICOS & IMPACTO NO ESTOQUE */}
+      <div className="p-6 md:p-8 bg-brand-navy border border-slate-800/50 rounded-[2rem] space-y-6">
+        <div className="border-b border-slate-800/45 pb-4">
+          <h3 className="font-display font-semibold text-white text-base flex items-center gap-2">
+            <Info className="w-4 h-4 text-brand-teal" />
+            Dicionário de Conceitos Logísticos & Impacto no Estoque
+          </h3>
+          <p className="text-xs text-slate-500 mt-1">
+            Entenda como as variáveis abaixo determinam os cálculos de reposição inteligente e a classificação do algoritmo da allla.ai.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          {/* Card 1: Tempo de Entrega */}
+          <div className="p-4 rounded-2xl bg-brand-navy-light border border-slate-800/40 space-y-2">
+            <h4 className="font-sans font-bold text-white text-sm">1. Tempo de Entrega</h4>
+            <p className="text-slate-350 leading-relaxed text-[11px]">
+              <strong>O que é:</strong> O tempo total (medido em dias) que decorre entre o envio do pedido de compra para o distribuidor/fabricante até o instante em que as peças chegam fisicamente ao Centro de Distribuição (CD) e estão prontas no estoque para serem vendidas.
+            </p>
+            <p className="text-slate-400 text-[11px] leading-relaxed">
+              <strong>Impacto no Estoque:</strong> Se um item tem 10 dias de entrega, você precisa ter estoque suficiente para aguentar pelo menos 10 dias de venda enquanto o fornecedor produz e transporta a mercadoria. Quanto maior o Tempo de Entrega, maior precisará ser o seu Ponto de Reposição (ROP).
+            </p>
+          </div>
+
+          {/* Card 2: Lote Mínimo de Compra */}
+          <div className="p-4 rounded-2xl bg-brand-navy-light border border-slate-800/40 space-y-2">
+            <h4 className="font-sans font-bold text-white text-sm">2. Lote Mínimo de Compra</h4>
+            <p className="text-slate-350 leading-relaxed text-[11px]">
+              <strong>O que é:</strong> A quantidade mínima de unidades que o fornecedor exige que você compre de uma só vez para aquele SKU específico.
+            </p>
+            <p className="text-slate-400 text-[11px] leading-relaxed">
+              <strong>Impacto no Estoque:</strong> O fornecedor não vende unidades avulsas abaixo dessa cota. Por exemplo, se a embreagem EMBR-DI tem lote mínimo de 5, você não pode comprar apenas 1, 2 ou 3 unidades; o pedido mínimo deve ser 5 (ou múltiplos disso: 10, 15, 20). O simulador calcula a necessidade real e a arredonda automaticamente para cima para o próximo múltiplo.
+            </p>
+          </div>
+
+          {/* Card 3: Histórico de Vendas Mensais */}
+          <div className="p-4 rounded-2xl bg-brand-navy-light border border-slate-800/40 space-y-2">
+            <h4 className="font-sans font-bold text-white text-sm">3. Histórico de Vendas Mensais</h4>
+            <p className="text-slate-350 leading-relaxed text-[11px]">
+              <strong>O que é:</strong> O histórico físico de saídas (vendas) daquela peça ao longo dos últimos meses.
+            </p>
+            <p className="text-slate-400 text-[11px] leading-relaxed">
+              <strong>Formato de Inserção:</strong> Deve ser inserido como uma lista de números separados por vírgula (ex: <code className="bg-slate-900 px-1 py-0.5 rounded text-teal-400 font-mono text-[10px]">18, 16, 20</code>), onde cada número representa exatamente as unidades físicas vendidas em cada mês respectivo. A separação por vírgula deixa claro o histórico de consumo mensal.
+            </p>
+          </div>
+
+          {/* Card 4: Impacto no Estoque & Desvio Padrão */}
+          <div className="p-4 rounded-2xl bg-brand-navy-light border border-slate-800/40 space-y-2">
+            <h4 className="font-sans font-bold text-white text-sm">4. Demanda & Volatilidade (Classe Z)</h4>
+            <p className="text-slate-350 leading-relaxed text-[11px]">
+              A partir do histórico de vendas, o algoritmo calcula duas métricas fundamentais:
+            </p>
+            <ul className="list-disc pl-4 text-slate-400 text-[11px] space-y-1.5 leading-relaxed">
+              <li><strong>Demanda Média Mensal ($D_m$):</strong> A média de vendas do período, usada para calcular o ritmo de consumo diário.</li>
+              <li><strong>Desvio Padrão Mensal ($\sigma_m$):</strong> Mede a oscilação das vendas. Se as vendas forem muito instáveis (ex: <code className="bg-slate-900 px-1 py-0.5 rounded text-teal-400">0, 50, 5</code>), o desvio padrão será alto. Isso sinaliza para a IA que a peça tem comportamento imprevisível (<strong>Classe Z</strong>), exigindo um Estoque de Segurança mais robusto para evitar que falte produto no balcão caso haja um pico repentino de procura.</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Parâmetros Avançados */}
+        <div className="p-4 rounded-2xl bg-teal-500/5 border border-brand-teal/20 space-y-2 text-xs">
+          <h4 className="font-sans font-bold text-brand-teal text-sm flex items-center gap-1.5">
+            <Sparkles className="w-4 h-4 text-brand-teal" />
+            Parâmetros Avançados de Calibração (Opcionais)
+          </h4>
+          <p className="text-slate-350 leading-relaxed text-[11px]">
+            Se esses dados não estiverem disponíveis no arquivo PDF/CSV ou no banco de dados, você poderá inseri-los manualmente na tabela abaixo ou deixá-los em branco. Caso permaneçam vazios, o algoritmo os descarta ou adota valores padrão de segurança:
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-[11px] text-slate-400 pt-1">
+            <div>
+              <strong className="text-white">Nível de Serviço Alvo (%):</strong> Probabilidade de não haver falta de estoque (ex: 95% ou 98%). Calibra o multiplicador Z de segurança. *Padrão: 95%*.
+            </div>
+            <div>
+              <strong className="text-white">Custo de Armazenagem Anual (%):</strong> Taxa anual de custo de carregamento do estoque (juros, espaço, perdas). Calibra o custo invisível de capital imobilizado. *Padrão: 26% ao ano*.
+            </div>
+            <div>
+              <strong className="text-white">Desvio do Tempo de Entrega (Dias):</strong> Variação/instabilidade média do prazo do fornecedor em dias. Protege o estoque contra atrasos na entrega. *Padrão: 0 dias*.
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* INTERACTIVE TABLE EDITOR */}
       <div className="p-6 md:p-8 bg-brand-navy border border-slate-800/50 rounded-[2rem] space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/45 pb-4">
@@ -542,7 +682,7 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
             Configure seu Lote de Testes (SKUs Modificáveis)
           </h3>
           <span className="text-xs text-slate-500 font-mono">
-            Modifique saldo físico, custos, preços e vendas mensais históricas abaixo
+            Modifique o estoque atual, custo unitário, preço de venda, tempo de entrega, lote mínimo e histórico de vendas mensais abaixo.
           </span>
         </div>
 
@@ -556,9 +696,12 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
                 <th className="p-3 text-center w-20">Estoque</th>
                 <th className="p-3 text-center w-24">Custo Unit.</th>
                 <th className="p-3 text-center w-24">Preço Venda</th>
-                <th className="p-3 text-center w-20">Lead Time</th>
-                <th className="p-3 text-center w-20">MOQ</th>
-                <th className="p-3 text-center w-36 font-semibold">Vendas Mensais Recentes</th>
+                <th className="p-3 text-center w-20">Tempo Entrega (Dias)</th>
+                <th className="p-3 text-center w-20">Lote Mínimo</th>
+                <th className="p-3 text-center w-20">Nível Serv. (%)</th>
+                <th className="p-3 text-center w-20">Custo Armaz. (%)</th>
+                <th className="p-3 text-center w-20">Desvio Prazo (Dias)</th>
+                <th className="p-3 text-center w-36 font-semibold">Histórico de Vendas (Mensal)</th>
                 <th className="p-3 text-right">Ação</th>
               </tr>
             </thead>
@@ -615,11 +758,54 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
                   </td>
                   <td className="p-3 text-center">
                     <input
+                      type="number"
+                      placeholder="95"
+                      value={item.nivelServicoAlvo ?? ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const updated = [...items];
+                        updated[idx].nivelServicoAlvo = val === "" ? undefined : Number(val);
+                        setItems(updated);
+                      }}
+                      className="w-14 px-1.5 py-1 bg-brand-navy-dark border border-slate-800 rounded text-center text-slate-205 font-mono focus:outline-none focus:border-brand-teal/60"
+                    />
+                  </td>
+                  <td className="p-3 text-center">
+                    <input
+                      type="number"
+                      placeholder="25"
+                      value={item.custoArmazenagemPercentual ?? ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const updated = [...items];
+                        updated[idx].custoArmazenagemPercentual = val === "" ? undefined : Number(val);
+                        setItems(updated);
+                      }}
+                      className="w-14 px-1.5 py-1 bg-brand-navy-dark border border-slate-800 rounded text-center text-slate-205 font-mono focus:outline-none focus:border-brand-teal/60"
+                    />
+                  </td>
+                  <td className="p-3 text-center">
+                    <input
+                      type="number"
+                      step="0.1"
+                      placeholder="0"
+                      value={item.desvioPrazoEntrega ?? ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const updated = [...items];
+                        updated[idx].desvioPrazoEntrega = val === "" ? undefined : Number(val);
+                        setItems(updated);
+                      }}
+                      className="w-14 px-1.5 py-1 bg-brand-navy-dark border border-slate-800 rounded text-center text-slate-205 font-mono focus:outline-none focus:border-brand-teal/60"
+                    />
+                  </td>
+                  <td className="p-3 text-center">
+                    <input
                       type="text"
                       value={item.saidas.join(", ")}
                       onChange={(e) => handleUpdateSaidas(idx, e.target.value)}
                       className="w-28 px-1.5 py-1 bg-brand-navy-dark border border-slate-800 rounded text-center text-slate-205 font-mono focus:outline-none focus:border-brand-teal/60"
-                      title="Separe por vírgulas (Ex: 45, 52, 49)"
+                      title="Separe por vírgulas (Ex: 18, 16, 20)"
                     />
                   </td>
                   <td className="p-3 text-right">
@@ -641,7 +827,7 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
         <form onSubmit={handleAddItem} className="space-y-4 pt-4 border-t border-slate-800/40">
           <span className="font-mono text-[10px] text-slate-500 block uppercase font-bold tracking-wider">ADICIONAR NOVO SKU DE TESTE (VARIÁVEIS DE CONTROLE DE COMPRAS)</span>
           <div className="space-y-3">
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               <input
                 type="text"
                 placeholder="SKU (Ex: EMBR-DI)"
@@ -675,6 +861,9 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
                 min="0"
                 required
               />
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               <input
                 type="number"
                 placeholder="Custo (R$)"
@@ -684,9 +873,6 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
                 min="0"
                 required
               />
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               <input
                 type="number"
                 placeholder="Preço Venda (R$)"
@@ -698,7 +884,7 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
               />
               <input
                 type="number"
-                placeholder="Lead Time (Dias)"
+                placeholder="Tempo de Entrega (Dias)"
                 value={newLeadTime}
                 onChange={(e) => setNewLeadTime(Number(e.target.value))}
                 className="p-2.5 text-xs bg-brand-navy-dark border border-slate-800 rounded-lg focus:outline-none focus:border-brand-teal/50 text-white font-mono"
@@ -707,7 +893,7 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
               />
               <input
                 type="number"
-                placeholder="MOQ (Lote Mínimo)"
+                placeholder="Lote Mínimo de Compra"
                 value={newMoq}
                 onChange={(e) => setNewMoq(Number(e.target.value))}
                 className="p-2.5 text-xs bg-brand-navy-dark border border-slate-800 rounded-lg focus:outline-none focus:border-brand-teal/50 text-white font-mono"
@@ -716,11 +902,40 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
               />
               <input
                 type="text"
-                placeholder="Vendas Mensais (Ex: 15, 12, 18)"
+                placeholder="Vendas Mensais (Ex: 18, 16, 20)"
                 value={newSaidas}
                 onChange={(e) => setNewSaidas(e.target.value)}
-                className="p-2.5 text-xs bg-brand-navy-dark border border-slate-800 rounded-lg focus:outline-none focus:border-brand-teal/50 text-white font-mono font-semibold col-span-1 md:col-span-2"
+                className="p-2.5 text-xs bg-brand-navy-dark border border-slate-800 rounded-lg focus:outline-none focus:border-brand-teal/50 text-white font-mono font-semibold"
                 required
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <input
+                type="number"
+                placeholder="Nível de Serviço Alvo (%) [Opcional]"
+                value={newNivelServico}
+                onChange={(e) => setNewNivelServico(e.target.value)}
+                className="p-2.5 text-xs bg-brand-navy-dark border border-slate-800 rounded-lg focus:outline-none focus:border-brand-teal/50 text-white font-mono"
+                min="0"
+                max="100"
+              />
+              <input
+                type="number"
+                placeholder="Custo de Armazenagem Anual (%) [Opcional]"
+                value={newCustoArmazenagem}
+                onChange={(e) => setNewCustoArmazenagem(e.target.value)}
+                className="p-2.5 text-xs bg-brand-navy-dark border border-slate-800 rounded-lg focus:outline-none focus:border-brand-teal/50 text-white font-mono"
+                min="0"
+              />
+              <input
+                type="number"
+                step="0.1"
+                placeholder="Desvio do Tempo de Entrega (Dias) [Opcional]"
+                value={newDesvioPrazo}
+                onChange={(e) => setNewDesvioPrazo(e.target.value)}
+                className="p-2.5 text-xs bg-brand-navy-dark border border-slate-800 rounded-lg focus:outline-none focus:border-brand-teal/50 text-white font-mono"
+                min="0"
               />
             </div>
             
@@ -759,21 +974,6 @@ export default function ModoVivoController({ onBackToTese, onAnalysisResult }: M
             <RefreshCw className="w-4 h-4 text-brand-teal" />
             <span>Executar Simulação Local de Reposição</span>
           </button>
-        </div>
-      </div>
-
-      {/* Brand assurance badges */}
-      <div className="p-4 rounded-2xl bg-brand-navy border border-slate-800/50 flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-[11px] text-slate-500">
-        <span className="flex items-center gap-1.5 text-slate-400">
-          <ShieldCheck className="w-4 h-4 text-brand-teal" />
-          Segurança garantida: Dados encapsulados no CD do Varejão
-        </span>
-        <div className="flex items-center gap-2">
-          <span>•</span>
-          <span className="flex items-center gap-1">
-            <Info className="w-3 text-brand-teal" />
-            Fiel às Diretrizes do Color System e Métricas Mensais da allla
-          </span>
         </div>
       </div>
     </div>

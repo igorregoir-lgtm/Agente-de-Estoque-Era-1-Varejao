@@ -10,7 +10,10 @@ CREATE TABLE skus_amostra (
     custo NUMERIC(10,2) NOT NULL,
     preco NUMERIC(10,2) NOT NULL,
     "leadTimeDias" INTEGER NOT NULL,
-    moq INTEGER NOT NULL
+    moq INTEGER NOT NULL,
+    "nivelServicoAlvo" NUMERIC(5,2),
+    "custoArmazenagemPercentual" NUMERIC(5,2),
+    "desvioPrazoEntrega" NUMERIC(5,2)
 );
 
 ALTER TABLE skus_amostra ENABLE ROW LEVEL SECURITY;

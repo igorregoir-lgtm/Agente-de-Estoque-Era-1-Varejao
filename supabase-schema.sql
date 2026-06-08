@@ -32,7 +32,10 @@ CREATE TABLE skus_amostra (
     custo NUMERIC(10,2) NOT NULL,
     preco NUMERIC(10,2) NOT NULL,
     "leadTimeDias" INTEGER NOT NULL, -- Lead time in business days
-    moq INTEGER NOT NULL -- Minimum order quantity
+    moq INTEGER NOT NULL, -- Minimum order quantity
+    "nivelServicoAlvo" NUMERIC(5,2), -- Target service level in % (e.g. 95.00)
+    "custoArmazenagemPercentual" NUMERIC(5,2), -- Annual carrying cost in % (e.g. 25.00)
+    "desvioPrazoEntrega" NUMERIC(5,2) -- Lead time standard deviation in days (e.g. 1.50)
 );
 
 -- Enable Row Level Security (RLS) - Disabled for initial demo simplicity

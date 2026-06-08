@@ -58,11 +58,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       - Consumo Semanal Médio (avgWeeklyDemand): avgMonthlyDemand / 4.33.
       - Classe ABC: baseada em preço * avgWeeklyDemand * 8. ITENS A detêm ~70% do faturamento, B ~20%, C ~10%.
       - Classe XYZ (Variabilidade): X é estável, Y é moderadamente instável, Z é altamente errático/variável.
-      - Estoque de Segurança (SS): 1.65 * (desvio_padrao_mensal / 5.48) * sqrt(leadTimeDias). Se o desvio padrão das saídas for 0 ou houver menos de 2 valores, assuma SS = 1.65 * (avgDailyDemand * 0.2) * sqrt(leadTimeDias).
+      - Fator Z (Nível de Serviço): Se 'nivelServicoAlvo' estiver preenchido no SKU (ex: 95 ou 98), use o Fator Z correspondente (90% -> Z=1.28, 95% -> Z=1.65, 98% -> Z=2.05, 99% -> Z=2.33). Se não estiver preenchido, use Z=1.65 (95%).
+      - Estoque de Segurança (SS): 
+        Calcule a variabilidade diária da demanda: sigma_d = desvio_padrao_mensal / 5.48. Se o desvio padrão mensal for 0 ou houver menos de 2 valores de saídas, assuma sigma_d = avgDailyDemand * 0.2.
+        Se 'desvioPrazoEntrega' (sigma_LT) estiver preenchido e maior que 0:
+          SS = Z * sqrt(leadTimeDias * (sigma_d^2) + (avgDailyDemand^2) * (desvioPrazoEntrega^2))
+        Caso contrário (não preenchido ou 0):
+          SS = Z * sigma_d * sqrt(leadTimeDias)
+        Arredonde o Estoque de Segurança para cima.
       - Ponto de Reposição (ROP): (avgDailyDemand * leadTimeDias) + Estoque de Segurança.
       - Dias até ruptura: estoqueAtual / avgDailyDemand.
       - Alerta: "Crítico" se dias até ruptura <= leadTimeDias; "Atenção" se estoqueAtual <= ROP; "Normal" caso contrário.
       - Capital Imobilizado: se estoqueAtual > ROP + avgMonthlyDemand, calcule (estoqueAtual - (ROP + avgMonthlyDemand)) * custo. Caso contrário, 0.
+      - Custo de Manutenção por Semana (custoManutencaoSemana):
+        Se 'custoArmazenagemPercentual' estiver preenchido e maior que 0, use: (Capital Imobilizado * (custoArmazenagemPercentual / 100)) / 52.
+        Se não estiver preenchido, use o padrão: Capital Imobilizado * 0.005 (0.5% por semana, equivalente a 26% ao ano).
       - Receita em Risco: se nivelAlerta for "Crítico", calcule ((avgDailyDemand * leadTimeDias) - estoqueAtual) * preco. Caso contrário, 0.
       - Qtd Sugerida para pedir: se houver alerta crítico ou atenção, sugerir quantidade para recompor o estoque até (ROP + avgMonthlyDemand) respeitando o MOQ (arredonde para cima para o próximo múltiplo inteiro de MOQ). Se estiver normal ou com excesso, sugerir 0.
       

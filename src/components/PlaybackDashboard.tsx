@@ -258,7 +258,14 @@ export default function PlaybackDashboard({ onComplete, liveData }: PlaybackDash
           <h2 className="text-2xl font-display font-bold text-white mt-1">{STEPS[currentStep].label}</h2>
           <p className="text-sm text-slate-400 mt-1">{STEPS[currentStep].subtitle}</p>
         </div>
-        <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/50 backdrop-blur-sm text-xs md:text-sm font-sans max-w-md text-slate-300">
+        <div 
+          className="p-3.5 rounded-2xl border text-xs md:text-sm font-sans max-w-md shadow-sm"
+          style={{ 
+            backgroundColor: 'var(--color-paper-soft)', 
+            borderColor: 'var(--color-rule)', 
+            color: 'var(--color-ink)' 
+          }}
+        >
           {currentStep === 0 && (
             <span><strong>Dificuldade:</strong> Planilhas manuais e intuições de compradores geram compras impulsivas ou falta de produto que você não percebe imediatamente.</span>
           )}
@@ -417,8 +424,15 @@ export default function PlaybackDashboard({ onComplete, liveData }: PlaybackDash
                   </table>
                 </div>
 
-                <div className="p-3 rounded bg-amber-500/10 border border-amber-500/25 text-[11px] text-amber-200 font-mono flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
+                <div 
+                  className="p-3 rounded border text-[11px] font-mono flex items-center gap-2"
+                  style={{ 
+                    backgroundColor: '#fffbeb', 
+                    borderColor: '#fde68a', 
+                    color: '#92400e' 
+                  }}
+                >
+                  <AlertTriangle className="w-4 h-4 shrink-0" style={{ color: '#d97706' }} />
                   <span>Dificuldade identificada: O amortecedor AMOR-DI tem <strong>85 unidades</strong> no almoxarifado (desperdício de espaço), enquanto PAST-FR tem <strong>apenas 5</strong> e faturamento em risco alto. O ERP não avisa isso de forma preventiva.</span>
                 </div>
               </div>

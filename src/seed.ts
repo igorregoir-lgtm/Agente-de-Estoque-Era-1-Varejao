@@ -10,7 +10,10 @@ export const SKUS_AM_DADOS: SkuAmostra[] = [
     custo: 180.00,
     preco: 310.00,
     leadTimeDias: 10,
-    moq: 10
+    moq: 10,
+    nivelServicoAlvo: 98,
+    custoArmazenagemPercentual: 25,
+    desvioPrazoEntrega: 2.0
   },
   {
     sku: "PAST-FR",
@@ -21,7 +24,10 @@ export const SKUS_AM_DADOS: SkuAmostra[] = [
     custo: 65.00,
     preco: 110.00,
     leadTimeDias: 5,
-    moq: 20
+    moq: 20,
+    nivelServicoAlvo: 95,
+    custoArmazenagemPercentual: 20,
+    desvioPrazoEntrega: 1.0
   },
   {
     sku: "SENS-OX",

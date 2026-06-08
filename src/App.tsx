@@ -89,14 +89,14 @@ export default function App() {
           </div>
 
           {/* Intelligence applied by allla - enlarged and clean */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-950/40 border border-slate-800/40 select-none">
-            <span className="text-[11px] font-mono text-slate-400 tracking-tight">
+          <div className="flex items-center gap-3.5 px-4 py-2.5 rounded-2xl bg-slate-950/40 border border-slate-800/40 select-none">
+            <span className="text-sm font-semibold text-slate-350 tracking-tight font-mono">
               Intelligence applied by
             </span>
             <img 
               src="/logo_allla.jpeg" 
               alt="allla logo" 
-              className="h-6 w-auto rounded opacity-90 object-contain border border-slate-700/20"
+              className="h-10 w-auto rounded opacity-90 object-contain border border-slate-700/20"
             />
           </div>
         </div>
@@ -164,41 +164,7 @@ export default function App() {
 
       </main>
 
-      {/* Exquisite Footer adhering to "allla" minimalist aesthetics */}
-      <footer className="border-t border-slate-800/40 bg-brand-navy/40 py-8 px-4 md:px-8 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 font-mono">
-          <div className="text-left">
-            <p className="text-slate-400 font-semibold">allla.ai · Inteligência Logística</p>
-            <p className="text-[11px] text-slate-600 mt-0.5">Varejão Auto Peças — CD Centro Salvador</p>
-          </div>
-          <div className="flex items-center gap-6">
-            <a 
-              href="#" 
-              onClick={(e) => { e.preventDefault(); setStage("welcome"); }} 
-              className="hover:text-slate-300 transition-colors"
-            >
-              Início
-            </a>
-            <a 
-              href="#" 
-              onClick={(e) => { e.preventDefault(); setStage("tese"); }} 
-              className="hover:text-slate-350 transition-colors"
-            >
-              Tese 3 Fases
-            </a>
-            <a 
-              href="#" 
-              onClick={(e) => { e.preventDefault(); setStage("live-playground"); }} 
-              className="hover:text-slate-350 transition-colors"
-            >
-              Modo ao Vivo
-            </a>
-          </div>
-          <p className="text-[10px] text-slate-600">
-            © 2026 allla.ai. Ativo de Demonstração e Venda Consultiva.
-          </p>
-        </div>
-      </footer>
+
     </div>
   );
 }
