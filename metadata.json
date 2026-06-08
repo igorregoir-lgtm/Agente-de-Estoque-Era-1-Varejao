@@ -1,1 +1,1 @@
-{"name":"Agente de Estoque Era 1 Varejão","description":"Demonstrador estratégico do Agente de Estoque da Era 1, convertendo dados crus de ERP em decisões explicáveis de compra.","requestFramePermissions":[],"majorCapabilities":["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]}
+{"name":"Agente Inteligente de Estoque Varejão - Fase 1","description":"Simulação inteligente de abastecimento e calibração de estoque para o Varejão Autopeças - Fase 1.","requestFramePermissions":[],"majorCapabilities":["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]}
