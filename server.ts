@@ -3,6 +3,7 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
+import { authorizeAiRequest, validateSkusPayload } from "./api/_lib/aiGuard.js";
 
 dotenv.config();
 
@@ -38,11 +39,17 @@ app.get("/api/health", (req, res) => {
 
 // Costura A - API Endpoint for dynamic Gemini-powered Era 1 analysis (Modo Ao Vivo)
 app.post("/api/genai-analise", async (req, res) => {
+  const access = authorizeAiRequest(req, res);
+  if (access.ok === false) {
+    return res.status(access.status).json({ error: access.error });
+  }
+
   try {
-    const { skus } = req.body;
-    if (!skus || !Array.isArray(skus) || skus.length === 0) {
-      return res.status(400).json({ error: "Parâmetros inválidos. 'skus' deve ser um array não vazio." });
+    const payload = validateSkusPayload(req.body);
+    if (payload.ok === false) {
+      return res.status(payload.status).json({ error: payload.error });
     }
+    const skus = payload.value;
 
     const ai = getAiClient();
     
