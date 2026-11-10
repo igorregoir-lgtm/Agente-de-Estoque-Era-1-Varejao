@@ -1,5 +1,6 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import { GoogleGenAI } from "@google/genai";
+import { applyCors, authorizeAiRequest, validateSkusPayload } from "./_lib/aiGuard.js";
 
 let aiClient: GoogleGenAI | null = null;
 function getAiClient(): GoogleGenAI {
@@ -21,14 +22,7 @@ function getAiClient(): GoogleGenAI {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Enable CORS
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS,PATCH,DELETE,POST,PUT");
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
-  );
+  applyCors(res);
 
   if (req.method === "OPTIONS") {
     return res.status(200).end();
@@ -38,11 +32,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: "Method not allowed. Use POST." });
   }
 
+  const access = authorizeAiRequest(req, res);
+  if (access.ok === false) {
+    return res.status(access.status).json({ error: access.error });
+  }
+
   try {
-    const { skus } = req.body;
-    if (!skus || !Array.isArray(skus) || skus.length === 0) {
-      return res.status(400).json({ error: "Parâmetros inválidos. 'skus' deve ser um array não vazio." });
+    const payload = validateSkusPayload(req.body);
+    if (payload.ok === false) {
+      return res.status(payload.status).json({ error: payload.error });
     }
+    const skus = payload.value;
 
     const ai = getAiClient();
     

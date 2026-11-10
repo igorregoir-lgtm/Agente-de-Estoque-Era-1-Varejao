@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { SkuAmostra, AnaliseSku, RelatorioExecutivo } from "../types";
 import { Sparkles, Play, Plus, Trash2, ArrowLeft, Loader2, AlertCircle, RefreshCw, Layers, ShieldCheck, Info, Database, Check, FileText } from "lucide-react";
 import { supabase, ensureSupabaseUserId } from "../utils/supabaseClient";
+import { postToAiEndpoint } from "../utils/aiAccess";
 
 interface ModoVivoControllerProps {
   items: SkuAmostra[];
@@ -233,14 +234,11 @@ export default function ModoVivoController({ items, setItems, onBackToTese, onAn
             throw new Error("Não foi possível ler o arquivo.");
           }
 
-          const response = await fetch("/api/parse-document", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              fileBase64: base64Data,
-              mimeType: file.type || (file.name.endsWith(".csv") ? "text/csv" : "application/pdf"),
-              fileName: file.name
-            })
+          const lowerName = file.name.toLowerCase();
+          const response = await postToAiEndpoint("/api/parse-document", {
+            fileBase64: base64Data,
+            mimeType: lowerName.endsWith(".csv") ? "text/csv" : file.type || "application/pdf",
+            fileName: file.name
           });
 
           const data = await response.json();
@@ -303,11 +301,7 @@ export default function ModoVivoController({ items, setItems, onBackToTese, onAn
     setIsKeyMissing(false);
 
     try {
-      const response = await fetch("/api/genai-analise", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ skus: items })
-      });
+      const response = await postToAiEndpoint("/api/genai-analise", { skus: items });
 
       const data = await response.json();
 
