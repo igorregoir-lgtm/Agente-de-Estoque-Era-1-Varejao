@@ -1,5 +1,7 @@
 // Varejão Era 1 — Database Seeder
 // Run this script using `node scripts/seed-supabase.js` to seed sample SKUs into Supabase.
+// skus_amostra is owner-scoped by RLS, so seeding needs the service role key
+// (never exposed to the browser) and the auth user id that will own the rows.
 
 import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
@@ -7,9 +9,10 @@ import path from 'path';
 
 // Manual loading of .env.local variables
 let supabaseUrl = process.env.VITE_SUPABASE_URL;
-let supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+let supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+let ownerId = process.env.SEED_OWNER_ID;
 
-if (!supabaseUrl || !supabaseKey) {
+if (!supabaseUrl || !supabaseKey || !ownerId) {
   try {
     const envPath = path.resolve(process.cwd(), '.env.local');
     if (fs.existsSync(envPath)) {
@@ -21,7 +24,8 @@ if (!supabaseUrl || !supabaseKey) {
           const key = parts[0].trim();
           const val = parts.slice(1).join('=').trim().replace(/^['"]|['"]$/g, '');
           if (key === 'VITE_SUPABASE_URL') supabaseUrl = val;
-          if (key === 'VITE_SUPABASE_ANON_KEY') supabaseKey = val;
+          if (key === 'SUPABASE_SERVICE_ROLE_KEY' && !supabaseKey) supabaseKey = val;
+          if (key === 'SEED_OWNER_ID' && !ownerId) ownerId = val;
         }
       }
     }
@@ -30,15 +34,18 @@ if (!supabaseUrl || !supabaseKey) {
   }
 }
 
-if (!supabaseUrl || !supabaseKey) {
-  console.log('Skipping seed: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY must be defined in environment or .env.local');
+if (!supabaseUrl || !supabaseKey || !ownerId) {
+  console.log('Skipping seed: VITE_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY and SEED_OWNER_ID must be defined in environment or .env.local');
   console.log('To run this locally with Supabase, create a .env.local file with:');
   console.log('VITE_SUPABASE_URL=your_supabase_project_url');
-  console.log('VITE_SUPABASE_ANON_KEY=your_supabase_anon_key');
+  console.log('SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key');
+  console.log('SEED_OWNER_ID=auth_user_uuid_that_owns_the_rows');
   process.exit(0);
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: { persistSession: false, autoRefreshToken: false }
+});
 
 const skusData = [
   { sku: "JUNT-TM", nome: "Junta Homocinética Vetor VT5031", categoria: "Transmissão", estoqueAtual: 2, saidas: [58, 52, 60], custo: 180.00, preco: 310.00, leadTimeDias: 10, moq: 10 },
@@ -59,13 +66,13 @@ const skusData = [
 ];
 
 async function seed() {
-  console.log('Seeding SKUs sample data into Supabase table: skus_amostra...');
+  console.log(`Seeding SKUs sample data into Supabase table: skus_amostra (owner ${ownerId})...`);
   
-  // Clear existing data
+  // Clear existing data for this owner only
   const { error: deleteError } = await supabase
     .from('skus_amostra')
     .delete()
-    .neq('sku', '');
+    .eq('owner_id', ownerId);
 
   if (deleteError) {
     console.error('Error clearing old SKUs:', deleteError);
@@ -74,7 +81,7 @@ async function seed() {
   // Insert items
   const { data, error } = await supabase
     .from('skus_amostra')
-    .insert(skusData);
+    .insert(skusData.map((item) => ({ ...item, owner_id: ownerId })));
 
   if (error) {
     console.error('Error seeding data:', error.message);

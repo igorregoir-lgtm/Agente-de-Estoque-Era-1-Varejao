@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { SkuAmostra, AnaliseSku, RelatorioExecutivo } from "../types";
 import { Sparkles, Play, Plus, Trash2, ArrowLeft, Loader2, AlertCircle, RefreshCw, Layers, ShieldCheck, Info, Database, Check, FileText } from "lucide-react";
-import { supabase } from "../utils/supabaseClient";
+import { supabase, ensureSupabaseUserId } from "../utils/supabaseClient";
 
 interface ModoVivoControllerProps {
   items: SkuAmostra[];
@@ -151,6 +151,7 @@ export default function ModoVivoController({ items, setItems, onBackToTese, onAn
     setErrorMessage(null);
     setDbSuccessMessage(null);
     try {
+      await ensureSupabaseUserId();
       const { data, error } = await supabase
         .from("skus_amostra")
         .select("*");
@@ -188,17 +189,19 @@ export default function ModoVivoController({ items, setItems, onBackToTese, onAn
     setErrorMessage(null);
     setDbSuccessMessage(null);
     try {
+      const ownerId = await ensureSupabaseUserId();
+      const ownedItems = ownerId ? items.map((item) => ({ ...item, owner_id: ownerId })) : items;
       const { error } = await supabase
         .from("skus_amostra")
-        .upsert(items, { onConflict: "sku" });
+        .upsert(ownedItems, { onConflict: "owner_id,sku" });
 
       if (error) {
         console.warn("DB Upsert failed, retrying with stripped fields...", error);
         // Stripped fallback: remove parameters not present in basic schema
-        const strippedItems = items.map(({ nivelServicoAlvo, custoArmazenagemPercentual, desvioPrazoEntrega, ...rest }) => rest);
+        const strippedItems = ownedItems.map(({ nivelServicoAlvo, custoArmazenagemPercentual, desvioPrazoEntrega, ...rest }) => rest);
         const { error: retryError } = await supabase
           .from("skus_amostra")
-          .upsert(strippedItems, { onConflict: "sku" });
+          .upsert(strippedItems, { onConflict: "owner_id,sku" });
         if (retryError) throw retryError;
         setDbSuccessMessage(`Sucesso! ${items.length} SKUs salvos (apenas campos básicos, pois as novas colunas não existem no banco).`);
       } else {

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Play, Pause, RotateCcw, FastForward, SkipForward, AlertTriangle, CheckCircle, HelpCircle, FileText, Database, ShieldAlert, ArrowRight, DollarSign, TrendingUp, Sparkles, UserCheck, Mail } from "lucide-react";
 import { SKUS_AM_DADOS, ANALISES_PRECOMPUTED, RELATORIO_PRECOMPUTED } from "../seed";
 import { AnaliseSku } from "../types";
-import { supabase } from "../utils/supabaseClient";
+import { supabase, ensureSupabaseUserId } from "../utils/supabaseClient";
 
 interface PlaybackDashboardProps {
   onComplete: () => void;
@@ -61,7 +61,9 @@ export default function PlaybackDashboard({ onComplete, liveData }: PlaybackDash
     const adjustedQty = quantities[sku] !== undefined ? quantities[sku] : originalQty;
     setSavingFeedback((prev) => ({ ...prev, [sku]: true }));
     try {
+      const ownerId = await ensureSupabaseUserId();
       const { error } = await supabase.from("ajustes_pedidos").insert({
+        ...(ownerId ? { owner_id: ownerId } : {}),
         sku,
         original_qty: originalQty,
         adjusted_qty: adjustedQty,

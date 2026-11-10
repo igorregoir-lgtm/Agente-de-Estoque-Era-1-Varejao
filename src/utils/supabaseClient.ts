@@ -24,6 +24,23 @@ if (isSupabaseConfigured) {
   }
 }
 
+// Rows in skus_amostra / ajustes_pedidos are scoped to auth.uid() by RLS,
+// so every browser gets its own (anonymous) Supabase user.
+export async function ensureSupabaseUserId(): Promise<string | null> {
+  if (!isSupabaseConfigured || !supabaseInstance) return null;
+  const { data: sessionData } = await supabaseInstance.auth.getSession();
+  const existingId = sessionData?.session?.user?.id;
+  if (existingId) return existingId;
+  const { data, error } = await supabaseInstance.auth.signInAnonymously();
+  if (error || !data?.user?.id) {
+    throw new Error(
+      'Não foi possível autenticar no Supabase (verifique se "Anonymous sign-ins" está habilitado): ' +
+        (error?.message || 'usuário não retornado')
+    );
+  }
+  return data.user.id;
+}
+
 // Mock implementation when Supabase is not configured
 const mockSupabase = {
   from: (table: string) => {
